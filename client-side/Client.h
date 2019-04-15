@@ -1,17 +1,21 @@
-//
-// Created by root on 15/04/19.
-//
 
 #ifndef DROPBOX_CLIENT_H
 #define DROPBOX_CLIENT_H
 
-
+#include <strings.h>
+#include <iostream>
+#include <netinet/in.h>
+#include <netdb.h>
 
 class Client {
 private:
     int sockfd;
     struct sockaddr_in serv_addr;
     struct hostent *server;
+public:
+    Client(char *host, int port);
+    int establishConnectionToHost();
+
 };
 
 
