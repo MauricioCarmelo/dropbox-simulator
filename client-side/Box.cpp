@@ -22,10 +22,8 @@ int main(int argc, char *argv[]) {
     strcpy(host, argv[2]);
     int port = atoi(argv[3]);
 
-    cout << host << " " << port << " " << username << endl;
-
-    //Client client(host, 4000);
-    //client.establishConnectionToHost();
+    Client client(host, port);
+    client.establishConnectionToHost();
 
     return 0;
 }
