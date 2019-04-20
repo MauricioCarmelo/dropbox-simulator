@@ -4,4 +4,4 @@ project(dropbox)
 set(CMAKE_CXX_STANDARD 14)
 
 add_executable(box client-side/box_main.cpp client-side/Client.cpp client-side/Client.h client-side/box_main.cpp client-side/Box.cpp client-side/Box.h client-side/SystemDAO.cpp client-side/SystemDAO.h client-side/FileManager.cpp client-side/FileManager.h client-side/File.cpp client-side/File.h)
-add_executable(warehouse server-side/Warehouse.cpp)
+add_executable(warehouse server-side/Warehouse.cpp server-side/Server.cpp server-side/Server.h client-side/Client.cpp client-side/Client.h client-side/File.cpp client-side/File.h)
