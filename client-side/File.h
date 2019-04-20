@@ -11,7 +11,8 @@
 
 struct fileDescriptor {
     std::string name;
-    // lastUpdatedDate
+    // TODO lastUpdatedDate parameter
+    //TODO file extension parameter
     int size;
 };
 
@@ -20,7 +21,7 @@ private:
     fileDescriptor descriptor;
 public:
     File();
-    ~File() {};
+    ~File() = default;;
     std::string getName();
     int getSize();
     fileDescriptor getDescriptor();
