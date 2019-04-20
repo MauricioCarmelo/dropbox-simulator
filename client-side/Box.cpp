@@ -4,6 +4,6 @@
 #include "Client.h"
 
 int Box::open(char *host, int port) {
-    Client client(host, port);
+    client = Client(host, port);
     client.establishConnectionToHost();
 }
