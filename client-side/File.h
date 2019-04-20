@@ -6,8 +6,24 @@
 #define DROPBOX_FILE_H
 
 
-class File {
+#include <string>
 
+
+struct fileDescriptor {
+    std::string name;
+    // lastUpdatedDate
+    int size;
+};
+
+class File {
+private:
+    fileDescriptor descriptor;
+public:
+    File();
+    ~File() {};
+    std::string getName();
+    int getSize();
+    fileDescriptor getDescriptor();
 };
 
 

@@ -7,17 +7,17 @@
 
 
 #include <vector>
+#include "File.h"
 
 class FileManager {
 private:
-    std::vector<Files> files;
+    std::vector<File> files;
 
 public:
-    FileManager();
-    ~FileManager();
+    FileManager() {};
+    ~FileManager() {};
     void openFile(std::string filename, char* buffer);
-
-
+    bool createDir(char* dirName);
 };
 
 

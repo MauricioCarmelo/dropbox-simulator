@@ -15,7 +15,9 @@ private:
     FileManager fm;
 
 public:
-    bool createDir(std::string path);
+    SystemDAO();
+    ~SystemDAO() {};
+    bool createDir(char *dir_path);
 
 };
 

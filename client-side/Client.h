@@ -13,6 +13,8 @@ private:
     struct sockaddr_in serv_addr;
     struct hostent *server;
 public:
+    Client();
+    ~Client() {};
     Client(char *host, int port);
     int establishConnectionToHost();
 

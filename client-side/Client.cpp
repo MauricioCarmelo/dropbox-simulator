@@ -1,6 +1,11 @@
 #include "Client.h"
 
-Client::Client(char *host, int port) {
+Client::Client()
+{
+}
+
+Client::Client(char *host, int port)
+{
     server = gethostbyname(host);
     if (server == NULL) {
         fprintf(stderr, "ERROR, no such host\n");
