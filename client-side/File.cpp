@@ -4,6 +4,8 @@
 
 #include "File.h"
 
+File::File() = default;
+
 std::string File::getName()
 {
     return descriptor.name;
@@ -17,4 +19,4 @@ int File::getSize()
 fileDescriptor File::getDescriptor()
 {
     return descriptor;
-};
+}
