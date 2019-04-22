@@ -1,7 +1,7 @@
 #include <iostream>
 #include <cstring>
-#include "Client.h"
-#include "Box.h"
+#include "../include/Client.h"
+#include "../include/Box.h"
 
 #define USERNAME_SIZE 25
 

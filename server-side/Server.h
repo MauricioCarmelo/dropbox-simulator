@@ -6,8 +6,8 @@
 #define DROPBOX_SERVER_H
 
 
-#include "../client-side/File.h"
-#include "../client-side/Client.h"
+#include "../client-side/include/File.h"
+#include "../client-side/include/Client.h"
 
 class Server {
 

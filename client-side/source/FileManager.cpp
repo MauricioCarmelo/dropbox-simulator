@@ -4,7 +4,7 @@
 
 #include <sys/stat.h>
 #include <iostream>
-#include "FileManager.h"
+#include "../include/FileManager.h"
 
 void FileManager::openFile(std::string filename, char *buffer) {
 

@@ -1,5 +1,5 @@
-#include "Box.h"
-#include "Client.h"
+#include "../include/Box.h"
+#include "../include/Client.h"
 #include <string.h>
 
 Box::Box()
