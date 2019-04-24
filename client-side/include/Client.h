@@ -11,6 +11,9 @@
 #include <netinet/in.h>
 #include <netdb.h>
 #include <iostream>
+
+#define BUFFER_SIZE 4
+
 class Client {
 private:
     int sockfd;
