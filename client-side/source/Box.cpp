@@ -10,7 +10,8 @@ int Box::open(char *host, int port) {
     client = Client(host, port);
     client.establishConnectionToHost();
     createSyncDir();
-
+    char frase[] = "frase1";
+    client.send(frase, 7);
 }
 
 bool Box::createSyncDir( )
