@@ -9,10 +9,10 @@ int main() {
     socklen_t addressSize;
 
     Server newServer;
+    newServer.createSocket("127.0.0.1", 4200);
+    newServer.receive_file();
 
-    serverSocket = newServer.createServerSocket("127.0.0.1", 4200);
-
-    while (true){
+    /*while (true){
 
         std::cout << "Waiting for client..." << std::endl;
 
@@ -22,8 +22,7 @@ int main() {
         newSocket = accept(serverSocket, (struct sockaddr *) &serverWarehouse, &addressSize);
 
        // newServer.send_file(testFile,newSocket); TODO send file to server
-    }
+    }*/
 
     return 0;
 }
-
