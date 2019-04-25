@@ -1,15 +1,16 @@
-#include <iostream>
-#include <sys/socket.h>
-#include "Server.h"
+//
+// Created by root on 25/04/19.
+//
 
-int main() {
+#include "Warehouse.h"
 
+int Warehouse::run(int port) {
     int serverSocket, newSocket;
     struct sockaddr_storage serverWarehouse;
     socklen_t addressSize;
 
     Server newServer;
-    newServer.createSocket("127.0.0.1", 4200);
+    newServer.createSocket("127.0.0.1", port);
     newServer.receive_file();
 
     /*while (true){
@@ -23,6 +24,5 @@ int main() {
 
        // newServer.send_file(testFile,newSocket); TODO send file to server
     }*/
-
     return 0;
 }
