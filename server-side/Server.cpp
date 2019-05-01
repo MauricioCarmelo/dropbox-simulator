@@ -7,7 +7,7 @@
 
 Server::Server() = default;
 
-int Server::createSocket(char* host, int port) {
+int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         printf("ERROR opening socket");
@@ -24,24 +24,6 @@ int Server::createSocket(char* host, int port) {
 
     clilen = sizeof(struct sockaddr_in);
 
-    /*if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        printf("ERROR opening socket");
-    //First parameter is the internet domain IPV4
-    //Second parameter means we are using TCP
-    //Third paramer tells the OP to use the default protocol
-    serverSocket = socket(PF_INET, SOCK_STREAM, 0);
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(port);
-    serverAddress.sin_addr.s_addr = INADDR_ANY; //TODO use host parameter here instead
-    memset(serverAddress.sin_zero, '\0', sizeof serverAddress.sin_zero);
-    if (bind(serverSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
-        printf("ERROR on binding");
-
-    listen(serverSocket, 5);
-
-    clilen = sizeof(struct sockaddr_in);*/
-
-    //return serverSocket;
     return 0;
 }
 
@@ -80,6 +62,27 @@ int Server::receive_file() {
     close(newsockfd);
     close(sockfd);
     return 0;
+}
+
+int Server::countUserConnections(std::string user) {
+    int i, count = 0;
+
+    while (semaphore == 1){
+        //do nothing
+    }
+
+    semaphore = 1;
+
+    for (i = 0; i < 10; i++){
+        if (clients[i].name == user && clients[i].isLogged)
+            count++;
+    }
+
+    std:: cout << "[Server] User " << user << "has " << count << "connections" << std::endl;
+
+    semaphore = 0;
+
+    return count;
 }
 
 
