@@ -10,7 +10,7 @@ Server::Server() = default;
 int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        printf("ERROR opening socket");
+        std:: cout << "ERROR opening socket" << std::endl;
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
@@ -18,7 +18,7 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
     bzero(&(serv_addr.sin_zero), 8);
 
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-        printf("ERROR on binding");
+        std:: cout << "ERROR on binding" << std::endl;
 
     listen(sockfd, 5);
 
@@ -35,7 +35,7 @@ int Server::receive_file() {
     char buffer[BUFFER_SIZE];
 
     if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
-        printf("ERROR on accept");
+        std:: cout << "ERROR on accept" << std::endl;
 
     bytes_received = 0;
     while(bytes_received < file_size) {
@@ -44,7 +44,7 @@ int Server::receive_file() {
         /* read from the socket */
         n = read(newsockfd, buffer, BUFFER_SIZE);
         if (n < 0)
-            printf("ERROR reading from socket");
+            std:: cout << "ERROR reading from socket" << std::endl;
 
         memcpy(message+bytes_received, buffer, n);
         bytes_received = bytes_received + n;
@@ -53,7 +53,7 @@ int Server::receive_file() {
 
     n = write(newsockfd, "Hi", 3);
     if (n < 0)
-        printf("ERROR writing to socket");
+        std:: cout << "ERROR writing to socket" << std::endl;
 
     for (char c: message)
         std::cout << c;
