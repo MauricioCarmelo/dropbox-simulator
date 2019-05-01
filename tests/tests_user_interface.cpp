@@ -49,9 +49,6 @@ TEST_CASE("Test prepare_instruction() from class Box")
     auto result1 = box.prepare_instruction(line1);
     auto result2 = box.prepare_instruction(line2);
 
-
-
-
     // assert
     CHECK( strcmp(result1.command_name, inst1.command_name) == 0 );
     CHECK( result1.command_id == inst1.command_id );
@@ -62,6 +59,4 @@ TEST_CASE("Test prepare_instruction() from class Box")
     CHECK( result2.command_id == inst2.command_id );
     CHECK( strcmp(result2.path, inst2.path) == 0 );
     CHECK( strcmp(result2.filename, inst2.filename) == 0 );
-
-
 }
