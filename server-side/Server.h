@@ -30,6 +30,7 @@ public:
     int createSocket(char* host, int port);
     int receive_file();
     int countUserConnections(std::string user); //counts how many connections a user has
+    void createUserDirectory(const char *user);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 

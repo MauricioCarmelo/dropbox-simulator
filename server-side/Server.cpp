@@ -4,6 +4,7 @@
 
 #include "Server.h"
 #include <cstring>
+#include <sys/stat.h>
 
 Server::Server() = default;
 
@@ -83,6 +84,22 @@ int Server::countUserConnections(std::string user) {
     semaphore = 0;
 
     return count;
+}
+
+void Server::createUserDirectory(const char *user) {
+
+    struct stat st = {0};
+    char diretorio[50] = "sync_dir_";
+    strcat(diretorio,user);
+
+    if (stat(diretorio, &st) != 0) {
+        mkdir(diretorio, 07777);
+        std:: cout << "[Server] User: " << user << "has now a client folder" << std::endl;
+    }
+    else {
+        std::cout << "[Server] User " << "already has a folder" << std::endl;
+    }
+
 }
 
 
