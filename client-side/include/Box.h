@@ -20,12 +20,12 @@
 #define EXIT 8
 #define INVALID_COMMAND -1
 
-struct Instruction {
+/*struct Instruction {
     char command_name[50];
     int command_id;
     char path[50];
     char filename[50];
-};
+};*/
 
 class Box {
 

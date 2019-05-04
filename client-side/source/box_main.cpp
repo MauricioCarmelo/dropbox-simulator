@@ -1,7 +1,9 @@
 #include <iostream>
 #include <cstring>
+#include <thread>
 #include "../include/Client.h"
 #include "../include/Box.h"
+#include "../../utils/Utility.h"
 
 #define USERNAME_SIZE 25
 
@@ -23,8 +25,12 @@ int main(int argc, char *argv[]) {
     strcpy(host, argv[2]);
     int port = atoi(argv[3]);
 
-    Box box;
-    box.open(host, port);
+    thread th_monitor_console(waitForUserCommand);
+
+    th_monitor_console.join();
+
+    //Box box;
+    //box.open(host, port);
 
     return 0;
 }

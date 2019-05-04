@@ -18,22 +18,17 @@
 #define EXIT 8
 #define INVALID_COMMAND -1
 
-class Utility {
-
-    struct Instruction {
-        char command_name[50];
-        int command_id;
-        char path[50];
-        char filename[50];
-    };
-
-
-public:
-    void waitForUserCommand();
-    Instruction prepare_instruction(char line[]);
-    int get_command_id(char *command);
-
+struct Instruction {
+    char command_name[50];
+    int command_id;
+    char path[50];
+    char filename[50];
 };
+
+void waitForUserCommand();
+Instruction prepare_instruction(char line[]);
+int get_command_id(char *command);
+void print_instruction(Instruction inst);
 
 
 #endif //DROPBOX_UTILITY_H

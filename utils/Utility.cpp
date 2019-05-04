@@ -5,22 +5,23 @@
 #include "Utility.h"
 #include <string.h>
 #include <stdio.h>
+#include <iostream>
 
-void Utility::waitForUserCommand() {
+void waitForUserCommand() {
     char line[100];
-    while(1)
+    Instruction instruction;
+
+    while(instruction.command_id != EXIT)
     {
         scanf("%[^\n]", line);
         getchar();
 
-        Instruction instruction;
         instruction = prepare_instruction(line);
-
-        break; // remover isso depois
+        print_instruction(instruction);
     }
 }
 
-Utility::Instruction Utility::prepare_instruction(char *line) {
+Instruction prepare_instruction(char *line) {
     Instruction inst;
     auto command_name = strtok(line, " ");
     strcpy(inst.command_name, command_name);
@@ -51,7 +52,7 @@ Utility::Instruction Utility::prepare_instruction(char *line) {
     return inst;
 }
 
-int Utility::get_command_id(char *command) {
+int get_command_id(char *command) {
     if ( strcmp(command, "upload") ==  0 )
         return UPLOAD;
     else if ( strcmp(command, "download") ==  0 )
@@ -68,4 +69,12 @@ int Utility::get_command_id(char *command) {
         return EXIT;
     else
         return INVALID_COMMAND;
+}
+
+void print_instruction(Instruction inst){
+    std::cout << "Você digitou o comando " << inst.command_name << " cujo ID eh " << inst.command_id;
+    if(strcmp(inst.filename, "") != 0)
+        std::cout << " com o arquivo " << inst.path << inst.filename << std::endl;
+    else
+        std::cout << "\n";
 }
