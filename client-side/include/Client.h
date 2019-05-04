@@ -26,6 +26,8 @@ public:
     int establishConnectionToHost();
     int send(char* buffer, int size);
 
+    std::string name;
+    bool isLogged;
 };
 
 #endif //DROPBOX_CLIENT_H
