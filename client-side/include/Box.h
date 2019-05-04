@@ -37,9 +37,6 @@ public:
     ~Box() {};
     int open(char *host, int port);
     bool createSyncDir();
-    void interface();
-    Instruction prepare_instruction(char line[]);
-    int get_command_id(char *command);
 };
 
 #endif //DROPBOX_BOX_H
