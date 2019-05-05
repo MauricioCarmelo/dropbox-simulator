@@ -1,4 +1,4 @@
-
+/*
 #define CATCH_CONFIG_MAIN
 
 #include <catch2/catch.hpp>
@@ -60,3 +60,5 @@ TEST_CASE("Test prepare_instruction() from class Box")
     CHECK( strcmp(result2.path, inst2.path) == 0 );
     CHECK( strcmp(result2.filename, inst2.filename) == 0 );
 }
+
+ */
