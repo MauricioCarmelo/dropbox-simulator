@@ -34,6 +34,7 @@ public:
     //Server(const File &fileInfo, const Client &client);
     int createSocket(char* host, int port);
     int receive_file();
+    //int receive_file_stream(char *stream);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 

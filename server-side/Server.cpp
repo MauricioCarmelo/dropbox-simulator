@@ -47,8 +47,8 @@ int Server::createSocket(char* host, int port) {
 
 int Server::receive_file() {
 
-    char message[10];
-    int file_size = 7;
+    char message[100];
+    int file_size = 3;  // determinar o tamanho do arquivo de outra maneira
     int bytes_received;
     char buffer[BUFFER_SIZE];
 
@@ -66,21 +66,26 @@ int Server::receive_file() {
 
         memcpy(message+bytes_received, buffer, n);
         bytes_received = bytes_received + n;
-        std::cout << "Bytes received: " << bytes_received << std::endl;
+        //std::cout << "Bytes received: " << bytes_received << std::endl;
     }
-
-    n = write(newsockfd, "Hi", 3);
+    n = write(newsockfd, "ack", 3);
     if (n < 0)
         printf("ERROR writing to socket");
 
-    for (char c: message)
-        std::cout << c;
+    for (int i=0; i<bytes_received; i++){
+        std::cout << message[i];
+    }
     std::cout << std::endl;
 
-    close(newsockfd);
-    close(sockfd);
+    /*for (char c: message) {
+        std::cout << c;
+    }*/
+
+    //close(newsockfd);
+    //close(sockfd);
     return 0;
 }
+
 
 
 /*
