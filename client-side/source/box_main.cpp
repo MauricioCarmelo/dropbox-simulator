@@ -31,8 +31,5 @@ int main(int argc, char *argv[]) {
     box.open(host, port);
     th_monitor_console.join();
 
-    //Box box;
-    //box.open(host, port);
-
     return 0;
 }

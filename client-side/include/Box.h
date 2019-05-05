@@ -37,7 +37,7 @@ public:
     ~Box() {};
     int open(char *host, int port);
     bool createSyncDir();
-    int read_file(char *file, char filename);
+    int read_file(char* fileContent, std::string filePath);
 };
 
 #endif //DROPBOX_BOX_H
