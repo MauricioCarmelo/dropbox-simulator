@@ -30,8 +30,8 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 
 int Server::receive_file() {
 
-    char message[100];
-    int file_size = 3;  // determinar o tamanho do arquivo de outra maneira
+    char message[100];  // isso nao vai ficar aqui
+    int file_size = 7;  // determinar o tamanho do arquivo de outra maneira
     int bytes_received;
     char buffer[BUFFER_SIZE];
 
@@ -66,7 +66,7 @@ int Server::receive_file() {
 
     //close(newsockfd);
     //close(sockfd);
-    return 0;
+    return bytes_received;
 }
 
 int Server::countUserConnections(std::string user) {

@@ -29,3 +29,9 @@ bool Box::createSyncDir( )
         return true;
     return false;
 }
+
+int Box::read_file(char *file, char filename)
+{
+    // usar o sistem DAO para ler um arquivo
+    // sda.read_file()
+}

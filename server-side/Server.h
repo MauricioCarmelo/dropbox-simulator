@@ -8,7 +8,7 @@
 #include "../client-side/include/File.h"
 #include "../client-side/include/Client.h"
 
-#define BUFFER_SIZE 4
+#define BUFFER_SIZE 4   // fazer um buffer maior, 256
 
 class Server {
 

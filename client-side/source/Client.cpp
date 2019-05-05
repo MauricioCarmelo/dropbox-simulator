@@ -38,30 +38,6 @@ int Client::send(char *data, int size)
     packet data_packet = prepare_data_packet(data, size);
     send_data_packet(data_packet);
 
-    /*char buffer[BUFFER_SIZE];
-    int n;
-    int bytes_amount;
-    int buffer_size;
-    int sent_bytes = 0;
-    do {
-        if( size-sent_bytes >= BUFFER_SIZE )
-            buffer_size = BUFFER_SIZE;
-        else
-            buffer_size = size - sent_bytes;
-
-        memcpy(buffer, data+sent_bytes, buffer_size);
-        //n = write(sockfd, buffer, sizeof(buffer) - size + buffer_size), onde buffer eh a struct
-        n = write(sockfd, buffer, buffer_size);
-        sent_bytes += n;
-    } while ( sent_bytes < size);
-
-    n = read(sockfd, buffer, 256);
-    if (n < 0)
-        printf("ERROR reading from socket\n");
-    printf("%s\n", buffer);
-
-    close(sockfd); // Socket won't close here in production mode
-    return 0;*/
     return 0;
 }
 
@@ -101,7 +77,6 @@ int Client::send_data_packet(packet data_packet)
     if (n < 0)
         printf("ERROR reading from socket\n");
     printf("%s\n", buffer);
-
 
     close(sockfd); // Socket won't close here in production mode
     return 0;

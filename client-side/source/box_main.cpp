@@ -27,6 +27,8 @@ int main(int argc, char *argv[]) {
 
     thread th_monitor_console(waitForUserCommand);
 
+    Box box;
+    box.open(host, port);
     th_monitor_console.join();
 
     //Box box;
