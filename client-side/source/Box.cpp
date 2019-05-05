@@ -1,6 +1,7 @@
 #include "../include/Box.h"
 #include "../include/Client.h"
 #include <string.h>
+#include <stdio.h>
 
 Box::Box()
 {

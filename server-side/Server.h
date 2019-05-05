@@ -19,13 +19,8 @@ private:
     int sockfd, newsockfd, n;
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
-
-    /*int serverSocket;
-    struct sockaddr_in serverAddress;
-    socklen_t clilen;
-    struct sockaddr_in cli_addr;
-    //File file_info;*/
-    Client client;
+    Client clients[10];
+    int semaphore = 0; // we should need this in the future
 
 public:
 
@@ -34,6 +29,8 @@ public:
     //Server(const File &fileInfo, const Client &client);
     int createSocket(char* host, int port);
     int receive_file();
+    int countUserConnections(std::string user); //counts how many connections a user has
+    void createUserDirectory(const char *user);
     //int receive_file_stream(char *stream);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client

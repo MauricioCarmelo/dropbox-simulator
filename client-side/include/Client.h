@@ -33,6 +33,9 @@ public:
     Client(char *host, int port);
     int establishConnectionToHost();
     int send(char* buffer, int size);
+
+    std::string name;
+    bool isLogged;
     packet prepare_data_packet(char *data, int size);
     int send_data_packet(packet data_packet);
 };

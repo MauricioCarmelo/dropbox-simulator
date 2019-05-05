@@ -1,8 +1,7 @@
 #include "../include/Client.h"
 
-Client::Client()
-{
-}
+Client::Client() {}
+
 
 Client::Client(char *host, int port)
 {

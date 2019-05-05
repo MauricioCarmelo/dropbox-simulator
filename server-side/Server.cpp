@@ -4,13 +4,14 @@
 
 #include "Server.h"
 #include <cstring>
+#include <sys/stat.h>
 
 Server::Server() = default;
 
-int Server::createSocket(char* host, int port) {
+int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        printf("ERROR opening socket");
+        std:: cout << "ERROR opening socket" << std::endl;
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
@@ -18,30 +19,12 @@ int Server::createSocket(char* host, int port) {
     bzero(&(serv_addr.sin_zero), 8);
 
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
-        printf("ERROR on binding");
+        std:: cout << "ERROR on binding" << std::endl;
 
     listen(sockfd, 5);
 
     clilen = sizeof(struct sockaddr_in);
 
-    /*if ((serverSocket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
-        printf("ERROR opening socket");
-    //First parameter is the internet domain IPV4
-    //Second parameter means we are using TCP
-    //Third paramer tells the OP to use the default protocol
-    serverSocket = socket(PF_INET, SOCK_STREAM, 0);
-    serverAddress.sin_family = AF_INET;
-    serverAddress.sin_port = htons(port);
-    serverAddress.sin_addr.s_addr = INADDR_ANY; //TODO use host parameter here instead
-    memset(serverAddress.sin_zero, '\0', sizeof serverAddress.sin_zero);
-    if (bind(serverSocket, (struct sockaddr *) &serverAddress, sizeof(serverAddress)) < 0)
-        printf("ERROR on binding");
-
-    listen(serverSocket, 5);
-
-    clilen = sizeof(struct sockaddr_in);*/
-
-    //return serverSocket;
     return 0;
 }
 
@@ -53,7 +36,7 @@ int Server::receive_file() {
     char buffer[BUFFER_SIZE];
 
     if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
-        printf("ERROR on accept");
+        std:: cout << "ERROR on accept" << std::endl;
 
     bytes_received = 0;
     while(bytes_received < file_size) {
@@ -62,7 +45,7 @@ int Server::receive_file() {
         /* read from the socket */
         n = read(newsockfd, buffer, BUFFER_SIZE);
         if (n < 0)
-            printf("ERROR reading from socket");
+            std:: cout << "ERROR reading from socket" << std::endl;
 
         memcpy(message+bytes_received, buffer, n);
         bytes_received = bytes_received + n;
@@ -70,7 +53,7 @@ int Server::receive_file() {
     }
     n = write(newsockfd, "ack", 3);
     if (n < 0)
-        printf("ERROR writing to socket");
+        std:: cout << "ERROR writing to socket" << std::endl;
 
     for (int i=0; i<bytes_received; i++){
         std::cout << message[i];
@@ -84,6 +67,43 @@ int Server::receive_file() {
     //close(newsockfd);
     //close(sockfd);
     return 0;
+}
+
+int Server::countUserConnections(std::string user) {
+    int i, count = 0;
+
+    while (semaphore == 1){
+        //do nothing
+    }
+
+    semaphore = 1;
+
+    for (i = 0; i < 10; i++){
+        if (clients[i].name == user && clients[i].isLogged)
+            count++;
+    }
+
+    std:: cout << "[Server] User " << user << "has " << count << "connections" << std::endl;
+
+    semaphore = 0;
+
+    return count;
+}
+
+void Server::createUserDirectory(const char *user) {
+
+    struct stat st = {0};
+    char diretorio[50] = "sync_dir_";
+    strcat(diretorio,user);
+
+    if (stat(diretorio, &st) != 0) {
+        mkdir(diretorio, 07777);
+        std:: cout << "[Server] User: " << user << "has now a client folder" << std::endl;
+    }
+    else {
+        std::cout << "[Server] User " << "already has a folder" << std::endl;
+    }
+
 }
 
 
