@@ -30,5 +30,21 @@ Instruction prepare_instruction(char line[]);
 int get_command_id(char *command);
 void print_instruction(Instruction inst);
 
+/* Exemplo:
+ *   char* buffer;
+ *   struct_to_char_ptr(buffer, s); // s é a variável da struct
+ */
+template <typename T> void struct_to_char_ptr(char*& array, T& strct){
+    array = (char*)&strct;
+}
+
+/* Exemplo:
+ *   T* s; // T é a struct
+ *   char_ptr_to_struct_ptr(buffer, s); // s é a variável da struct T
+ */
+template <typename T> void char_ptr_to_struct_ptr(char*& array, T*& strct){
+    strct = (T*)array;
+}
+
 
 #endif //DROPBOX_UTILITY_H
