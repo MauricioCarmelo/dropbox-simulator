@@ -8,13 +8,29 @@ Box::Box()
 }
 
 int Box::open(char *host, int port) {
-    client = Client(host, port);
-    client.establishConnectionToHost();
-    createSyncDir();
+    //client = Client(host, port);
+    //client.establishConnectionToHost();
+    //createSyncDir();
 
     // test
-    char frase[] = "frase1";
-    client.send(frase, 7);
+    //char frase[] = "frase1";
+    //client.send(frase, 7);
+
+    // open connection 1
+    c1 = Client(host, port);
+    c1.establishConnectionToHost();
+    connection_t con1;
+    con1.type = T1;
+    c1.establishConnectionType(con1);
+
+    // open connection 2
+    c2 = Client(host, port);
+    c2.establishConnectionToHost();
+    connection_t con2;
+    con2.type = T2;
+    c2.establishConnectionType(con2);
+
+    std::cout << "TERMINOU" << std::endl;
 }
 
 bool Box::createSyncDir( )

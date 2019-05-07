@@ -9,7 +9,8 @@ int Warehouse::run(int port) {
     std::cout << "Creating a new Server" << std::endl;
     Server newServer;
     newServer.createSocket("127.0.0.1", port);
-    newServer.receive_file();
+    newServer.run();
+    //newServer.receive_file();
 
     return 0;
 }

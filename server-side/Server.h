@@ -7,6 +7,8 @@
 
 #include "../client-side/include/File.h"
 #include "../client-side/include/Client.h"
+#include <pthread.h>
+#include <thread>
 
 #define BUFFER_SIZE 4   // fazer um buffer maior, 256
 
@@ -22,6 +24,7 @@ private:
     Client clients[10];
     int semaphore = 0; // we should need this in the future
 
+
 public:
 
     Server();
@@ -32,6 +35,8 @@ public:
     int countUserConnections(std::string user); //counts how many connections a user has
     void createUserDirectory(const char *user);
     //int receive_file_stream(char *stream);
+    int run();
+    int handle_type(int s);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 

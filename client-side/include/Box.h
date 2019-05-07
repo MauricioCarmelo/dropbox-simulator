@@ -32,6 +32,7 @@ class Box {
 private:
     Client client;
     SystemDAO sda;
+    Client c1, c2;
 public:
     Box();
     ~Box() {};

@@ -16,11 +16,20 @@
 #define CMD 1
 #define DATA 2
 
+#define T1 1
+#define T2 2
+#define T3 3
+
 typedef struct packet{
     int16_t type;
     uint16_t length;
     char* payload;
 } packet;
+
+typedef struct connection{
+    int16_t type;
+    // username
+} connection_t;
 
 class Client {
 private:
@@ -33,6 +42,8 @@ public:
     Client(char *host, int port);
     int establishConnectionToHost();
     int send(char* buffer, int size);
+
+    int establishConnectionType(connection_t c);
 
     std::string name;
     bool isLogged;
