@@ -7,74 +7,147 @@
 #include <stdio.h>
 #include <iostream>
 
+using namespace std;
+
 void waitForUserCommand() {
     char line[100];
     Instruction instruction;
 
-    while(instruction.command_id != EXIT)
+    while(instruction.get_command_id() != EXIT)
     {
         scanf("%[^\n]", line);
         getchar();
 
-        instruction = prepare_instruction(line);
-        print_instruction(instruction);
+        instruction.prepare(line);
+        instruction.print();
+
+        switch(instruction.get_command_id()){
+            case UPLOAD:
+                instruction.upload_file();
+                break;
+
+            case DOWNLOAD:
+                instruction.download_file();
+                break;
+
+            case DELETE:
+                instruction.delete_file();
+                break;
+
+            case LIST_SERVER:
+                instruction.list_server();
+                break;
+
+            case LIST_CLIENT:
+                instruction.list_client();
+                break;
+
+            case GET_SYNC_DIR:
+                instruction.get_sync_dir();
+                break;
+
+            case EXIT:
+                instruction.exit();
+                break;
+
+            case INVALID_COMMAND:
+                std::cout << "Invalid command!" << std::endl;
+                break;
+
+            default: break;
+        }
     }
 }
 
-Instruction prepare_instruction(char *line) {
-    Instruction inst;
-    auto command_name = strtok(line, " ");
-    strcpy(inst.command_name, command_name);
-    inst.command_id = get_command_id(inst.command_name);
+void Instruction::prepare(char *line) {
+    auto cmd_name = strtok(line, " ");
+    strcpy(command_name, cmd_name);
+    set_command_id();
 
-    switch (inst.command_id)
+    switch (command_id)
     {
         case UPLOAD: {
             line = strtok(NULL, "");
             char *pointer_to_name = strrchr(line, '/');
 
-            strncpy(inst.path, line, pointer_to_name - line + 1);
-            strcpy(inst.filename, pointer_to_name + 1);
+            strncpy(path, line, pointer_to_name - line + 1);
+            strcpy(filename, pointer_to_name + 1);
             break;
         }
         case DOWNLOAD: {
             line = strtok(NULL, "");
-            strcpy(inst.filename, line);
-            strcpy(inst.path, "");
+            strcpy(filename, line);
+            strcpy(path, "");
+            break;
+        }
+        case INVALID_COMMAND: {
             break;
         }
         default: {
-            strcpy(inst.path, "");
-            strcpy(inst.filename, "");
+            strcpy(path, "");
+            strcpy(filename, "");
             break;
         }
     }
-    return inst;
 }
 
-int get_command_id(char *command) {
-    if ( strcmp(command, "upload") ==  0 )
-        return UPLOAD;
-    else if ( strcmp(command, "download") ==  0 )
-        return DOWNLOAD;
-    else if ( strcmp(command, "delete") ==  0 )
-        return DELETE;
-    else if ( strcmp(command, "list_server") ==  0 )
-        return LIST_SERVER;
-    else if ( strcmp(command, "list_client") ==  0 )
-        return LIST_CLIENT;
-    else if ( strcmp(command, "get_sync_dir") ==  0 )
-        return GET_SYNC_DIR;
-    else if( strcmp(command, "exit") == 0 )
-        return EXIT;
-    else
-        return INVALID_COMMAND;
+int Instruction::get_command_id() {
+    return command_id;
 }
 
-void print_instruction(Instruction inst){
-    std::cout << "Você digitou o comando " << inst.command_name << " cujo ID eh " << inst.command_id;
-    if(strcmp(inst.filename, "") != 0)
-        std::cout << " com o arquivo " << inst.path << inst.filename << std::endl;
+void Instruction::set_command_id() {
+    if ( strcmp(command_name, "upload") ==  0 )
+        command_id = UPLOAD;
+    else if ( strcmp(command_name, "download") ==  0 )
+        command_id = DOWNLOAD;
+    else if ( strcmp(command_name, "delete") ==  0 )
+        command_id = DELETE;
+    else if ( strcmp(command_name, "list_server") ==  0 )
+        command_id = LIST_SERVER;
+    else if ( strcmp(command_name, "list_client") ==  0 )
+        command_id = LIST_CLIENT;
+    else if ( strcmp(command_name, "get_sync_dir") ==  0 )
+        command_id = GET_SYNC_DIR;
+    else if( strcmp(command_name, "exit") == 0 )
+        command_id = EXIT;
     else
-        std::cout << "\n";
+        command_id = INVALID_COMMAND;
+}
+
+void Instruction::print(){
+    if(command_id != INVALID_COMMAND){
+        std::cout << "Você digitou o comando " << command_name << " cujo ID eh " << command_id;
+        if(strcmp(filename, "") != 0)
+            std::cout << " com o arquivo " << path << filename << std::endl;
+        else
+            std::cout << "\n";
+    }
+}
+
+void Instruction::upload_file(){
+    cout << "Upload function called..." << endl;
+}
+
+void Instruction::download_file(){
+    cout << "Download function called..." << endl;
+}
+
+void Instruction::delete_file(){
+    cout << "Delete function called..." << endl;
+}
+
+void Instruction::list_server(){
+    cout << "List server function called..." << endl;
+}
+
+void Instruction::list_client(){
+    cout << "List client function called..." << endl;
+}
+
+void Instruction::get_sync_dir(){
+    cout << "Get sync dir function called..." << endl;
+}
+
+void Instruction::exit(){
+    cout << "Exit function called..." << endl;
 }
