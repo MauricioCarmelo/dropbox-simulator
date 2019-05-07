@@ -2,6 +2,7 @@
 #include "../include/Client.h"
 #include <string.h>
 #include <stdio.h>
+#include <fstream>
 
 Box::Box()
 {
@@ -33,8 +34,7 @@ int Box::open(char *host, int port) {
     std::cout << "TERMINOU" << std::endl;
 }
 
-bool Box::createSyncDir( )
-{
+bool Box::createSyncDir( ) {
     std::string dir_path;
     dir_path = "./";
     dir_path += SYNC_DIR;
@@ -46,8 +46,18 @@ bool Box::createSyncDir( )
     return false;
 }
 
-int Box::read_file(char *file, char filename)
-{
-    // usar o sistem DAO para ler um arquivo
-    // sda.read_file()
+int Box::read_file(char* fileContent, std::string filePath) {
+
+    std::ifstream in(filePath);
+    std::string contents((std::istreambuf_iterator<char>(in)),
+                         std::istreambuf_iterator<char>());
+
+    fileContent = new char [contents.length()+1];
+    strcpy (fileContent, contents.c_str());
+
+
+    return contents.length();
+
 }
+
+
