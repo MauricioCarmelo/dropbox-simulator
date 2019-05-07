@@ -5,6 +5,7 @@
 #ifndef DROPBOX_UTILITY_H
 #define DROPBOX_UTILITY_H
 
+#include <iostream>
 #include <string.h>
 
 #define SYNC_DIR "sync_dir"
@@ -30,21 +31,25 @@ Instruction prepare_instruction(char line[]);
 int get_command_id(char *command);
 void print_instruction(Instruction inst);
 
-/* Exemplo:
- *   char* buffer;
- *   struct_to_char_ptr(buffer, s); // s é a variável da struct
- */
-template <typename T> void struct_to_char_ptr(char*& array, T& strct){
-    array = (char*)&strct;
+// Exemplo:
+//  unsigned char* buffer;
+//  struct_to_unsigned_char_ptr(buffer, s); // s é a variável da struct T
+template <typename T> void struct_to_unsigned_char_ptr(unsigned char*& array, T& strct){
+    memcpy(array, (const unsigned char*)&strct, sizeof(T));
 }
 
-/* Exemplo:
- *   T* s; // T é a struct
- *   char_ptr_to_struct_ptr(buffer, s); // s é a variável da struct T
- */
-template <typename T> void char_ptr_to_struct_ptr(char*& array, T*& strct){
-    strct = (T*)array;
+// Exemplo:
+//  T s; // T é o tipo da struct, s é a variável
+//  unsigned_char_ptr_to_struct(buffer, s);
+template <typename T> void unsigned_char_ptr_to_struct(unsigned char *&array, T &strct){
+    memcpy(&strct, (T*)array, sizeof(T));
 }
 
+// Exemplo:
+//  unsigned char* buffer;
+//  alloc_unsigned_char_ptr_to_type_T<T>(buffer); // T é o tipo da struct
+template <typename T> void alloc_unsigned_char_ptr_to_type_T(unsigned char*& array){
+    array = (unsigned char*)malloc(sizeof(T));
+}
 
 #endif //DROPBOX_UTILITY_H
