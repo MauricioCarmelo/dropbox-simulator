@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <cstring>
+#include <dirent.h>
 
 using namespace std;
 
@@ -14,6 +15,8 @@ using namespace std;
 #define GET_SYNC_DIR 7
 #define EXIT 8
 #define INVALID_COMMAND -1
+
+#define PATH_TO_SYNC_DIR "../cmake-build-debug/sync_dir/"
 
 class Instruction{
 

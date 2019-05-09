@@ -15,7 +15,8 @@ void Instruction::prepare(char *line) {
             strcpy(filename, pointer_to_name + 1);
             break;
         }
-        case DOWNLOAD: {
+        case DOWNLOAD:
+        case DELETE: {
             line = strtok(NULL, "");
             strcpy(filename, line);
             strcpy(path, "");
@@ -75,6 +76,17 @@ void Instruction::download_file(){
 
 void Instruction::delete_file(){
     cout << "Delete function called..." << endl;
+
+    char* filepath = (char*)malloc(sizeof(PATH_TO_SYNC_DIR) + sizeof(path) + sizeof(filename));
+    strcpy(filepath, PATH_TO_SYNC_DIR);
+    strcat(filepath, path);
+    strcat(filepath, filename);
+
+    int remove_result = remove(filepath);
+    if(remove_result != 0)
+        perror("Error deleting file");
+    else
+        cout << "File " << filename << " deleted succesfully" << endl;
 }
 
 void Instruction::list_server(){
@@ -83,6 +95,18 @@ void Instruction::list_server(){
 
 void Instruction::list_client(){
     cout << "List client function called..." << endl;
+
+    DIR* dir;
+    struct dirent* ent;
+    dir = opendir(PATH_TO_SYNC_DIR);
+    if(dir == NULL)
+        perror("Error opening sync_dir");
+    else{
+        while((ent = readdir(dir)) != NULL){
+            if(strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) // avoid printing "." and ".."
+                cout << ent->d_name << endl;
+        }
+    }
 }
 
 void Instruction::get_sync_dir(){
