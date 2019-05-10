@@ -9,10 +9,16 @@ void Instruction::prepare(char *line) {
     {
         case UPLOAD: {
             line = strtok(NULL, "");
-            char *pointer_to_name = strrchr(line, '/');
+            if(line[0] == '/'){
+                char *pointer_to_name = strrchr(line, '/');
 
-            strncpy(path, line, pointer_to_name - line + 1);
-            strcpy(filename, pointer_to_name + 1);
+                strncpy(path, line, pointer_to_name - line + 1);
+                strcpy(filename, pointer_to_name + 1);
+            }
+            else{
+                cout << "Error: file parameter from upload command must begin with '/'" << endl;
+                command_id = INVALID_COMMAND;
+            }
             break;
         }
         case DOWNLOAD:
