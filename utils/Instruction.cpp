@@ -68,15 +68,44 @@ void Instruction::print(){
 
 void Instruction::upload_file(){
     cout << "Upload function called..." << endl;
+
+    char* filepath = (char*)malloc(sizeof(path) + sizeof(filename));
+    strcpy(filepath, path);
+    strcat(filepath, filename);
+
+    ifstream file(filepath);
+
+    if(file){
+        file.seekg(0, file.end);
+        long length = file.tellg();
+        file.seekg(0, file.beg);
+
+        char* fileContent = (char*)malloc(length);
+
+        cout << "Reading " << path << filename << endl;
+        file.read(fileContent, length);
+
+        if(file){
+            cout << "Whole file read successfully, " << length << " bytes read" << endl;
+            cout << "File content: " << fileContent << endl;
+        }
+        else
+            cout << "Error: couldn't read whole file" << endl;
+
+        file.close();
+
+        delete[] fileContent;
+    }
 }
 
 void Instruction::download_file(){
     cout << "Download function called..." << endl;
 
     // fileContent será recebido do servidor (por parâmetro?)
-    // então essas duas linhas não serão necessárias
-    char* fileContent = (char*)malloc(sizeof("esse é um exemplo de conteúdo do arquivo recebido do servidor."));
-    strcpy(fileContent, "esse é um exemplo de conteúdo do arquivo recebido do servidor.");
+    // então essas linhas não serão necessárias
+    char str[] = "esse é um exemplo de conteúdo do arquivo recebido do servidor.";
+    char* fileContent = (char*)malloc(sizeof(str));
+    strcpy(fileContent, str);
 
     // filepath setado para o cmake-build-debug pois é lá que está o executável => mudar no futuro
     char* filepath = (char*)malloc(sizeof("../cmake-build-debug/") + sizeof(filename));
@@ -86,6 +115,10 @@ void Instruction::download_file(){
     ofstream file(filepath);
     file.write(fileContent, strlen(fileContent));
     file.close();
+
+    delete[] fileContent;
+    delete[] filepath;
+
     cout << "Arquivo " << filename << " baixado do servidor" << endl;
 }
 
@@ -102,6 +135,8 @@ void Instruction::delete_file(){
         perror("Error deleting file");
     else
         cout << "File " << filename << " deleted succesfully" << endl;
+
+    delete[] filepath;
 }
 
 void Instruction::list_server(){
