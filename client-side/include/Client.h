@@ -28,7 +28,7 @@ typedef struct packet{
 
 typedef struct connection{
     int16_t type;
-    // username
+    int16_t username;
 } connection_t;
 
 class Client {

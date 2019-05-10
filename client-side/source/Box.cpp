@@ -12,16 +12,19 @@ int Box::open(char *host, int port) {
     //client = Client(host, port);
     //client.establishConnectionToHost();
     //createSyncDir();
+    srand(time(0));
 
     // test
     //char frase[] = "frase1";
     //client.send(frase, 7);
+    int username = rand()%10;
 
     // open connection 1
     c1 = Client(host, port);
     c1.establishConnectionToHost();
     connection_t con1;
     con1.type = T1;
+    con1.username = username;
     c1.establishConnectionType(con1);
 
     // open connection 2
@@ -29,7 +32,13 @@ int Box::open(char *host, int port) {
     c2.establishConnectionToHost();
     connection_t con2;
     con2.type = T2;
+    con2.username = username;
     c2.establishConnectionType(con2);
+
+    while(1) {
+        c1.establishConnectionType(con1);
+        c2.establishConnectionType(con2);
+    }
 
     std::cout << "TERMINOU" << std::endl;
 }

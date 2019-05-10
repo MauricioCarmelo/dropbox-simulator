@@ -35,9 +35,12 @@ int Client::establishConnectionType(connection_t c)
     //char frase[] = "frase1";
     //memcpy(buffer, frase, 7);
     n = write(sockfd, &c, sizeof(struct connection));
+    n = read(sockfd, buffer, 100);
+
+
     //n = write(sockfd, buffer, 7);
 
-    n = read(sockfd, buffer, 100);
+
     if (n < 0)
         std::cout << "ERROR reading from socket on  establishConnectionType()" << std::endl;
 
