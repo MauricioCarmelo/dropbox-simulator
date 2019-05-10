@@ -78,15 +78,28 @@ void *Server::mediatorThread(void *arg) {
 
     read(socket, &connection, sizeof(struct connection));
 
+    // checar se o usuario esta conectado
+
+        // se ja tiver max usuarios conectados, cancela o box
+
+        // se usuario nao esta conectado, alocar espaco para o user, com o nome e id do device atual
+
+        // Se o usuario esta conectado somente com um device (ou menos que o MAX_USERS), criar nova estrutura
+        // de device e inserir no espaco disponivel dentro do usuario
+
     if(connection.type == T1) {
+        // inserir socket1 na estrutura de device do usuario
         pthread_create(&thread, NULL, &Server::terminalThreadFunction, arg);
+
     }
 
     if(connection.type == T2) {
+        // inserir socket2 na estrutura de device do usuario
         pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
     }
 
     if(connection.type == T3) {
+        // inserir socket3 na estrutura de device do usuario
         pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
     }
 
