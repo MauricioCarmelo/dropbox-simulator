@@ -1,35 +1,22 @@
-//
-// Created by vagrant on 5/4/19.
-//
-
 #ifndef DROPBOX_UTILITY_H
 #define DROPBOX_UTILITY_H
 
 #include <iostream>
 #include <string.h>
+#include "Instruction.h"
+#include <sys/inotify.h>
+#include <unistd.h>
+#include <sys/poll.h>
 
 #define SYNC_DIR "sync_dir"
 
-#define UPLOAD 2
-#define DOWNLOAD 3
-#define DELETE 4
-#define LIST_SERVER 5
-#define LIST_CLIENT 6
-#define GET_SYNC_DIR 7
-#define EXIT 8
-#define INVALID_COMMAND -1
-
-struct Instruction {
-    char command_name[50];
-    int command_id;
-    char path[50];
-    char filename[50];
-};
+#define MAX_EVENT_MONITOR 2048
+#define FILE_NAME_LENGHT 32
+#define MONITOR_SINGLE_EVENT_SIZE (sizeof(struct inotify_event))
+#define BUFFER_LENGHT MAX_EVENT_MONITOR * (MONITOR_SINGLE_EVENT_SIZE + FILE_NAME_LENGHT)
 
 void waitForUserCommand();
-Instruction prepare_instruction(char line[]);
-int get_command_id(char *command);
-void print_instruction(Instruction inst);
+void inotify_watcher();
 
 // Exemplo:
 //  unsigned char* buffer;
