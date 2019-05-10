@@ -28,17 +28,81 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
     return 0;
 }
 
+void* Server::terminalThreadFunction(void *arg) {
+    connection_t connection;
+
+    //std::cout << "terminal thread here" << std::endl;
+    int socket = *(int *) arg;
+    write(socket,"ack", 3);
+
+    while(1) {
+        read(socket, &connection, sizeof(struct connection));
+        write(socket,"ack", 3);
+        std::cout << "terminal thread user " << connection.username << std::endl;
+    }
+}
+
+void* Server::serverNotifyThreadFunction(void *arg) {
+    connection_t connection;
+
+    //std::cout << "terminal thread here" << std::endl;
+    int socket = *(int *) arg;
+    write(socket,"ack", 3);
+
+    while(1) {
+        read(socket, &connection, sizeof(struct connection));
+        write(socket,"ack", 3);
+        std::cout << "  server notify thread user " << connection.username << std::endl;
+    }
+}
+
+void* Server::iNotifyThreadFunction(void *arg) {
+    connection_t connection;
+
+    //std::cout << "terminal thread here" << std::endl;
+    int socket = *(int *) arg;
+    write(socket,"ack", 3);
+
+    while(1) {
+        read(socket, &connection, sizeof(struct connection));
+        write(socket,"ack", 3);
+        std::cout << "      iNotify thread user " << connection.username << std::endl;
+    }
+}
+
+void *Server::mediatorThread(void *arg) {
+    std::cout << "got in the mediator thread" << std::endl;
+    connection_t connection;
+    pthread_t thread;
+    int socket = *(int *) arg;
+
+    read(socket, &connection, sizeof(struct connection));
+
+    if(connection.type == T1) {
+        pthread_create(&thread, NULL, &Server::terminalThreadFunction, arg);
+    }
+
+    if(connection.type == T2) {
+        pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
+    }
+
+    if(connection.type == T3) {
+        pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
+    }
+
+}
+
 int Server::run() {
-    while (1){
-        std::cout << "opa1" << std::endl;
+    int i = 0;
+
+    while (i<50){
         if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
             std::cout << "ERROR on accept" << std::endl;
-        auto s = newsockfd;
-        std::cout << "opa2" << std::endl;
 
-        //std::thread t1(&Server::handle_type, );
+        if( pthread_create(&threads[i], NULL, &Server::mediatorThread, &newsockfd) != 0 )
+            std::cout << "Failed to create thread" << std::endl;
 
-        handle_type(s);
+        i++;
     }
 }
 

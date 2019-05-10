@@ -23,7 +23,7 @@ private:
     struct sockaddr_in serv_addr, cli_addr;
     Client clients[10];
     int semaphore = 0; // we should need this in the future
-
+    pthread_t threads[50];
 
 public:
 
@@ -37,6 +37,10 @@ public:
     //int receive_file_stream(char *stream);
     int run();
     int handle_type(int s);
+    static void *mediatorThread(void *arg);
+    static void *terminalThreadFunction(void *arg);
+    static void *iNotifyThreadFunction(void *arg);
+    static void *serverNotifyThreadFunction(void *arg);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 
