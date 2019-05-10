@@ -72,6 +72,21 @@ void Instruction::upload_file(){
 
 void Instruction::download_file(){
     cout << "Download function called..." << endl;
+
+    // fileContent será recebido do servidor (por parâmetro?)
+    // então essas duas linhas não serão necessárias
+    char* fileContent = (char*)malloc(sizeof("esse é um exemplo de conteúdo do arquivo recebido do servidor."));
+    strcpy(fileContent, "esse é um exemplo de conteúdo do arquivo recebido do servidor.");
+
+    // filepath setado para o cmake-build-debug pois é lá que está o executável => mudar no futuro
+    char* filepath = (char*)malloc(sizeof("../cmake-build-debug/") + sizeof(filename));
+    strcpy(filepath, "../cmake-build-debug/");
+    strcat(filepath, filename);
+
+    ofstream file(filepath);
+    file.write(fileContent, strlen(fileContent));
+    file.close();
+    cout << "Arquivo " << filename << " baixado do servidor" << endl;
 }
 
 void Instruction::delete_file(){
