@@ -96,6 +96,10 @@ void Instruction::upload_file(){
 
         delete[] fileContent;
     }
+    else
+        cout << "Error: couldn't find file " << path << filename << endl;
+
+    delete[] filepath;
 }
 
 void Instruction::download_file(){
