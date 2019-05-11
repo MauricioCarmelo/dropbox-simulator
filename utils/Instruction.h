@@ -5,6 +5,8 @@
 #include <cstring>
 #include <dirent.h>
 #include <fstream>
+#include "../client-side/include/Client.h"
+#include "Utility.h"
 
 using namespace std;
 
@@ -19,6 +21,11 @@ using namespace std;
 
 #define PATH_TO_SYNC_DIR "../cmake-build-debug/sync_dir/"
 
+typedef struct file_t{
+    char* name;
+    char* content;
+} file_t;
+
 class Instruction{
 
 private:
@@ -32,8 +39,8 @@ public:
     void prepare(char* line);
     void set_command_id();
     void print();
-    void upload_file();
-    void download_file();
+    void upload_file(Client client);
+    void download_file(Client client);
     void delete_file();
     void list_server();
     void list_client();

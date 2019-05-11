@@ -4,7 +4,7 @@
 #include "../include/Client.h"
 #include "../include/Box.h"
 #include "../../utils/Utility.h"
-//#include <sys/inotify.h>
+#include <sys/inotify.h>
 
 #define USERNAME_SIZE 25
 
@@ -25,13 +25,13 @@ int main(int argc, char *argv[]) {
     strcpy(host, argv[2]);
     int port = atoi(argv[3]);
 
-    thread th_monitor_console(waitForUserCommand);
-    thread th_inotify(inotify_watcher);
+    /*thread th_monitor_console(waitForUserCommand);
+    thread th_inotify(inotify_watcher);*/
 
     Box box;
     box.open(host, port);
-    th_monitor_console.join();
-    th_inotify.join();
+    /*th_monitor_console.join();
+    th_inotify.join();*/
 
     return 0;
 }

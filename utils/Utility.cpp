@@ -2,9 +2,9 @@
 
 using namespace std;
 
-bool exit_command_typed = false;
+//bool exit_command_typed = false;
 
-void waitForUserCommand() {
+/*void waitForUserCommand() {
     char line[100];
     Instruction instruction;
 
@@ -123,4 +123,4 @@ void inotify_watcher(){
     inotify_rm_watch(inotify_descriptor, watcher_descriptor);
     close(inotify_descriptor);
     cout << "Inotify thread finished properly" << endl;
-}
+}*/

@@ -72,33 +72,50 @@ void Instruction::print(){
     }
 }
 
-void Instruction::upload_file(){
+void Instruction::upload_file(Client client){
     cout << "Upload function called..." << endl;
 
     char* filepath = (char*)malloc(sizeof(path) + sizeof(filename));
     strcpy(filepath, path);
     strcat(filepath, filename);
 
-    ifstream file(filepath);
+    ifstream file_read(filepath);
 
-    if(file){
-        file.seekg(0, file.end);
-        long length = file.tellg();
-        file.seekg(0, file.beg);
+    if(file_read){
+        file_read.seekg(0, file_read.end);
+        long length = file_read.tellg();
+        file_read.seekg(0, file_read.beg);
 
         char* fileContent = (char*)malloc(length);
 
         cout << "Reading " << path << filename << endl;
-        file.read(fileContent, length);
+        file_read.read(fileContent, length);
 
-        if(file){
+        if(file_read){
             cout << "Whole file read successfully, " << length << " bytes read" << endl;
             cout << "File content: " << fileContent << endl;
+
+            file_t file;
+            file.name = (char*)malloc(sizeof(filename));
+            strcpy(file.name, filename);
+            file.content = (char*)malloc(length);
+            strcpy(file.content, fileContent);
+
+            unsigned char* buffer;
+            alloc_unsigned_char_ptr_to_type_T<file_t>(buffer);
+            struct_to_unsigned_char_ptr(buffer, file);
+
+            //client.send((char*)buffer, sizeof(buffer));
+
+            /*file_t newfile; newfile.name = (char*)malloc(sizeof(filename));newfile.content = (char*)malloc(sizeof(fileContent));
+            unsigned_char_ptr_to_struct(buffer, newfile);
+            cout << file.name << ", " << file.content << endl;
+            cout << newfile.name << ", " << newfile.content << endl;*/
         }
         else
             cout << "Error: couldn't read whole file" << endl;
 
-        file.close();
+        file_read.close();
 
         delete[] fileContent;
     }
@@ -108,7 +125,7 @@ void Instruction::upload_file(){
     delete[] filepath;
 }
 
-void Instruction::download_file(){
+void Instruction::download_file(Client client){
     cout << "Download function called..." << endl;
 
     // fileContent será recebido do servidor (por parâmetro?)
