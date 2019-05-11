@@ -7,12 +7,12 @@ Client::Client(char *host, int port)
 {
     server = gethostbyname(host);
     if (server == NULL) {
-        fprintf(stderr, "ERROR, no such host\n");
+        fprintf(stderr, "[Client] ERROR, no such host\n");
         exit(0);
     }
 
     if ( (sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
-        std::cout << "ERROR opening socket" << std::endl;
+        cout << " [Client] ERROR opening socket" << std::endl;
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
@@ -23,7 +23,7 @@ Client::Client(char *host, int port)
 int Client::establishConnectionToHost()
 {
     if ( connect(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0 )
-        std::cout << "ERROR connecting" << std::endl;
+        cout << " [Client] ERROR connecting" << std::endl;
 
     return 0;
 }
@@ -42,7 +42,7 @@ int Client::establishConnectionType(connection_t c)
 
 
     if (n < 0)
-        std::cout << "ERROR reading from socket on  establishConnectionType()" << std::endl;
+        cout << " [Client] ERROR reading from socket on  establishConnectionType()" << std::endl;
 
     //close(sockfd);
     return 0;
@@ -95,7 +95,7 @@ int Client::send_data_packet(packet data_packet)
 
     n = read(sockfd, buffer, 256);
     if (n < 0)
-        printf("ERROR reading from socket\n");
+        printf(" [Client] ERROR reading from socket\n");
     printf("%s\n", buffer);
 
     close(sockfd); // Socket won't close here in production mode

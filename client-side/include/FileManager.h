@@ -6,8 +6,8 @@
 #define DROPBOX_FILEMANAGER_H
 
 
-#include <vector>
 #include "File.h"
+#include "../../utils/masterInclude.h"
 
 class FileManager {
 private:

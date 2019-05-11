@@ -6,7 +6,7 @@
 #define DROPBOX_FILE_H
 
 
-#include <string>
+#include "../../utils/masterInclude.h"
 
 
 struct fileDescriptor {

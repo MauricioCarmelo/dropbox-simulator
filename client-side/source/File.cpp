@@ -6,7 +6,7 @@
 
 File::File() = default;
 
-std::string File::getName()
+string File::getName()
 {
     return descriptor.name;
 }

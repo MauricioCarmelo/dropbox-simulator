@@ -7,7 +7,7 @@
 
 
 #include "FileManager.h"
-#include <string>
+#include "../../utils/masterInclude.h"
 
 class SystemDAO {
 

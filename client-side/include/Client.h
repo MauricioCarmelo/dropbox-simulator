@@ -2,15 +2,8 @@
 #ifndef DROPBOX_CLIENT_H
 #define DROPBOX_CLIENT_H
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <iostream>
+#include "../../utils/masterInclude.h"
+
 
 #define BUFFER_SIZE 4
 #define CMD 1
@@ -19,6 +12,8 @@
 #define T1 1
 #define T2 2
 #define T3 3
+
+using namespace std;
 
 typedef struct packet{
     int16_t type;

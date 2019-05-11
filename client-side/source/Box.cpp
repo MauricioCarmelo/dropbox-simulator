@@ -50,7 +50,7 @@ int Box::open(char *host, int port) {
 }
 
 bool Box::createSyncDir( ) {
-    std::string dir_path;
+    string dir_path;
     dir_path = "./";
     dir_path += SYNC_DIR;
     // convert string to array of char
@@ -61,11 +61,11 @@ bool Box::createSyncDir( ) {
     return false;
 }
 
-int Box::read_file(char* fileContent, std::string filePath) {
+int Box::read_file(char* fileContent, string filePath) {
 
-    std::ifstream in(filePath);
-    std::string contents((std::istreambuf_iterator<char>(in)),
-                         std::istreambuf_iterator<char>());
+    ifstream in(filePath);
+    string contents((istreambuf_iterator<char>(in)),
+                         istreambuf_iterator<char>());
 
     fileContent = new char [contents.length()+1];
     strcpy (fileContent, contents.c_str());
@@ -76,7 +76,7 @@ int Box::read_file(char* fileContent, std::string filePath) {
 }
 
 void* Box::th_func_monitor_console(Client client){
-    cout << "Monitor console thread" << endl;
+    cout << "[Box] Monitor console thread" << endl;
 
     char line[100];
     while(instruction.get_command_id() != EXIT)
@@ -116,7 +116,7 @@ void* Box::th_func_monitor_console(Client client){
                 break;
 
             case INVALID_COMMAND:
-                std::cout << "Invalid command!" << std::endl;
+                cout << " [Box] Invalid command!" << endl;
                 break;
 
             default: break;
@@ -124,30 +124,30 @@ void* Box::th_func_monitor_console(Client client){
     }
 
     exit_command_typed = true;
-    cout << "Thread monitoring console finished properly" << endl;
+    cout << " [Box] Thread monitoring console finished properly" << endl;
 }
 
 void* Box::th_func_inotify(){
-    cout << "Inotify thread" << endl;
+    cout << "[Box] Inotify thread" << endl;
 
     const char* folder_path = SYNC_DIR;
     char buffer[BUFFER_LENGHT];
 
     int inotify_descriptor = inotify_init();
     if(inotify_descriptor < 0){
-        cout << "Error initializing inotify" << endl;
+        cout << " [Box] Error initializing inotify" << endl;
         //return;
         exit(-1);
     }
-    cout << "Inotify initialized" << endl;
+    cout << "[Box] Inotify initialized" << endl;
 
     int watcher_descriptor = inotify_add_watch(inotify_descriptor, folder_path, IN_CREATE | IN_MODIFY | IN_DELETE);
     if(watcher_descriptor == -1){
-        cout << "Error initiazing inotify watcher" << endl;
+        cout << "[Box] Error initiazing inotify watcher" << endl;
         //return;
         exit(-1);
     }
-    cout << "Inotify watcher added to folder " << folder_path << endl;
+    cout << "[Box] Inotify watcher added to folder " << folder_path << endl;
 
     // será usado para criar um timer
     pollfd poll_descriptor;
@@ -161,7 +161,7 @@ void* Box::th_func_inotify(){
         int poll_result = poll(&poll_descriptor, 1, 100);
 
         if(poll_result < 0){
-            cout << "Inotify couldn't monitor changes on folder " << SYNC_DIR;
+            cout << "[Box] Inotify couldn't monitor changes on folder " << SYNC_DIR;
             //return;
             exit(-1);
         }
@@ -170,7 +170,7 @@ void* Box::th_func_inotify(){
             // read() é bloqueante, por isso é chamado apenas quando há algo para ler (quando poll_result > 0)
             int total_read = read(inotify_descriptor, buffer, BUFFER_LENGHT);
             if(total_read < 0){
-                cout << "Error reading inotify" << endl;
+                cout << "[Box] Error reading inotify" << endl;
                 //return;
                 exit(-1);
             }
@@ -182,13 +182,13 @@ void* Box::th_func_inotify(){
                 if(event->len){
 
                     if(event->mask & IN_CREATE){
-                        cout << "Directory or folder " << event->name << " was created" << endl;
+                        cout << "[Box] Directory or folder " << event->name << " was created" << endl;
                     }
                     if(event->mask & IN_MODIFY){
-                        cout << "Directory or folder " << event->name << " was modified" << endl;
+                        cout << "[Box] Directory or folder " << event->name << " was modified" << endl;
                     }
                     if(event->mask & IN_DELETE){
-                        cout << "Directory or folder " << event->name << " was deleted" << endl;
+                        cout << "[Box] Directory or folder " << event->name << " was deleted" << endl;
                     }
 
                     i += MONITOR_SINGLE_EVENT_SIZE + event->len;
@@ -199,5 +199,5 @@ void* Box::th_func_inotify(){
 
     inotify_rm_watch(inotify_descriptor, watcher_descriptor);
     close(inotify_descriptor);
-    cout << "Inotify thread finished properly" << endl;
+    cout << "[Box] Inotify thread finished properly" << endl;
 }

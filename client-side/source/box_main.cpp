@@ -1,10 +1,8 @@
-#include <iostream>
-#include <cstring>
-#include <thread>
+#include "../../utils/masterInclude.h"
 #include "../include/Client.h"
 #include "../include/Box.h"
 #include "../../utils/Utility.h"
-#include <sys/inotify.h>
+
 
 #define USERNAME_SIZE 25
 
@@ -15,8 +13,8 @@ char username[USERNAME_SIZE];
 int main(int argc, char *argv[]) {
 
     if (argc < 4) {
-        std::cout << "Please use" << std::endl;
-        std:: cout << "./box <user> <address> <port>" << std::endl;
+        cout << "[Box Main]Please use" << std::endl;
+        cout << "./box <user> <address> <port>" << std::endl;
         exit(1);
     }
 

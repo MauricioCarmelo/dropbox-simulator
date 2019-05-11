@@ -3,10 +3,7 @@
 
 #include "Client.h"
 #include "SystemDAO.h"
-#include <string.h>
-#include <stdio.h>
-#include <fstream>
-#include <thread>
+#include "../../utils/masterInclude.h"
 #include "../../utils/Instruction.h"
 
 #define SYNC_DIR "sync_dir"
