@@ -12,6 +12,22 @@
 
 #define BUFFER_SIZE 4   // fazer um buffer maior, 256
 
+#define MAX_DEVICES 2
+#define MAX_USERS 5
+
+struct Device {
+    int id;
+    int socket1;
+    int socket2; // escolher um nome melhor pros sockets
+    int socket3;
+};
+
+struct User {
+    char nome[25];
+    Device devices[MAX_DEVICES];
+};
+
+
 class Server {
 
 private:
@@ -24,6 +40,7 @@ private:
     Client clients[10];
     int semaphore = 0; // we should need this in the future
     pthread_t threads[50];
+    static User users[MAX_USERS];
 
 public:
 

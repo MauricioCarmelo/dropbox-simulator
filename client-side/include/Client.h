@@ -28,7 +28,8 @@ typedef struct packet{
 
 typedef struct connection{
     int16_t type;
-    int16_t username;
+    int16_t username; // mudar pra char[]
+    // mandar o id do device
 } connection_t;
 
 class Client {
