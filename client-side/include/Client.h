@@ -17,7 +17,6 @@
 using namespace std;
 
 typedef struct packet{
-    int16_t type;
     uint16_t length;
     struct file_t*  payload;
 } packet;
@@ -33,6 +32,7 @@ private:
     int sockfd;
     struct sockaddr_in serv_addr;
     struct hostent *server;
+    int determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket);
 public:
     Client();
     ~Client() {};

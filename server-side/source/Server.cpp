@@ -31,47 +31,67 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 }
 
 void* Server::terminalThreadFunction(void *arg) {
-    //connection_t connection;
+    std::cout << "terminal thread here" << std::endl;
 
-    //std::cout << "terminal thread here" << std::endl;
     int socket = *(int *) arg;
-    write(socket,"ack", 3);
+    int payloadSize;
+    char fileBuffer[BUFFER_SIZE];
+    char fileSizeBuffer[sizeof(uint16_t)];
+    int bytesReadFromSocket = 0;
+    int bytesReadCurrentIteration = 0;
+    int bufferSize;
 
-    /*while(1) {
-        read(socket, &connection, sizeof(struct connection));
-        write(socket,"ack", 3);
-        cout << "[Server] terminal thread user " << connection.username << endl;
-    }*/
-    packet data_packet;
-    receive_file();
+    ofstream offFile("out.txt");
+
+    bytesReadFromSocket = read(socket, fileSizeBuffer, sizeof(uint16_t));
+    if (bytesReadFromSocket == -1) {
+        cout << "erro na leitura do size" << endl;
+    }
+    payloadSize = *(int *)fileSizeBuffer;
+    bytesReadFromSocket = write(socket, fileSizeBuffer, sizeof(uint16_t));
+    if (bytesReadFromSocket == -1) {
+        cout << "erro no ack do size" << endl;
+    }
+
+    char payload[payloadSize];
+
+    bytesReadFromSocket = 0;
+
+    do {
+        bufferSize = determineCorrectSizeToBeRead(payloadSize, bytesReadFromSocket);
+
+        bytesReadCurrentIteration = read(socket, fileBuffer, bufferSize);
+        if (bufferSize != bytesReadCurrentIteration) {
+            cout << "Error reading current buffer in socket - should retry this part" << endl;
+        }
+
+        strcat(payload, fileBuffer);
+
+        bytesReadFromSocket += bufferSize;
+    } while(bytesReadFromSocket < payloadSize);
+
+    //altough payload is a char*, it should have a file_t content, which needs to be disassembled before writing to file
+
+    if ( fileBuffer) {
+        offFile.write(payload, payloadSize);
+        offFile.close();
+    }
+
+}
+
+int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocket) {
+    if( payloadSize - bytesReadFromSocket >= BUFFER_SIZE )
+        return BUFFER_SIZE;
+    else
+        return payloadSize - bytesReadFromSocket;
 }
 
 void* Server::serverNotifyThreadFunction(void *arg) {
-    connection_t connection;
 
-    //std::cout << "terminal thread here" << std::endl;
-    int socket = *(int *) arg;
-    write(socket,"ack", 3);
-
-    while(1) {
-        read(socket, &connection, sizeof(struct connection));
-        write(socket,"ack", 3);
-        cout << "[Server] server notify thread user " << connection.username << endl;
-    }
 }
 
 void* Server::iNotifyThreadFunction(void *arg) {
-    connection_t connection;
 
-    //std::cout << "terminal thread here" << std::endl;
-    int socket = *(int *) arg;
-    write(socket,"ack", 3);
-
-    while(1) {
-        read(socket, &connection, sizeof(struct connection));
-        write(socket,"ack", 3);
-        cout << "[Server] iNotify thread user " << connection.username << endl;
-    }
 }
 
 void *Server::mediatorThread(void *arg) {
@@ -79,8 +99,16 @@ void *Server::mediatorThread(void *arg) {
     connection_t connection;
     pthread_t thread;
     int socket = *(int *) arg;
+    int ack;
 
-    read(socket, &connection, sizeof(struct connection));
+    ack = read(socket, &connection, sizeof(struct connection));
+    if(ack == -1) {
+        cout << "erro no read do connection type" << endl;
+    }
+    ack = write(socket,"ack", 3);
+    if(ack == -1) {
+        cout << "erro no write ack no connection type" << endl;
+    }
 
     // checar se o usuario esta conectado
 

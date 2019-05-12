@@ -64,6 +64,7 @@ private:
     int semaphore = 0; // we should need this in the future
     pthread_t threads[50];
     //static User users[MAX_USERS];
+    static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
 
 public:
 

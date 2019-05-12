@@ -66,40 +66,66 @@ packet Client::prepare_data_packet(file_t data, int size)
 {
     packet data_packet;
 
-    data_packet.type = DATA;
     data_packet.length = size;
-    //data_packet.payload = data;//(char*)malloc(size);
-    memcpy(&data_packet.payload, &data, size);
+    //data_packet.payload = &data;//(char*)malloc(size);
+    memcpy(data_packet.payload->name, data.name, strlen(data.name));
+    memcpy(data_packet.payload->content, data.content, size - strlen(data.name));
 
     return data_packet;
 }
 
 int Client::send_data_packet(packet data_packet)
 {
+    int returnFromWrittenSize;
+    int ackReturn;
+    char ackBuffer[sizeof(uint16_t)];
     char buffer[BUFFER_SIZE];
-    int n;
-    int bytes_amount;
-    int buffer_size;
-    int size = data_packet.length;
-    int sent_bytes = 0;
+    int bytesCopiedFromPayload = 0;
+    int bytesWritenInSocket = 0;
+    int bytesWritenInCurrentIteration = 0;
+    int totalSize = data_packet.length;
+    int bufferSize;
+
+    returnFromWrittenSize = write(sockfd, &data_packet.length, sizeof(uint16_t));
+    if (returnFromWrittenSize != sizeof(uint16_t)) {
+        cout << "nao to enviando o length direito" << endl;
+    }
+    ackReturn = read(sockfd, ackBuffer, sizeof(uint16_t));
+    if (ackReturn == -1) {
+        cout << "nao recebi ack direito" << endl;
+    }
+
     do {
-        if( size-sent_bytes >= BUFFER_SIZE )
-            buffer_size = BUFFER_SIZE;
-        else
-            buffer_size = size - sent_bytes;
+        bufferSize = determineCorrectSizeToBeCopied(totalSize, bytesWritenInSocket);
 
-        memcpy(buffer, &data_packet.payload+sent_bytes, buffer_size);
-        //n = write(sockfd, buffer, sizeof(buffer) - size + buffer_size), onde buffer eh a struct
-        n = write(sockfd, buffer, buffer_size);
-        sent_bytes += n;
-    } while ( sent_bytes < size);
+        char buffertest[data_packet.length];
+        memcpy(buffertest, data_packet.payload, data_packet.length);
 
-    n = read(sockfd, buffer, 256);
-    if (n < 0)
-        printf(" [Client] ERROR reading from socket\n");
-    printf("%s\n", buffer);
+        memcpy(buffer, data_packet.payload + bytesCopiedFromPayload, bufferSize);
+        bytesCopiedFromPayload += bufferSize;
 
-    close(sockfd); // Socket won't close here in production mode
+        bytesWritenInCurrentIteration = write(sockfd, buffer, bufferSize);
+        if (bufferSize != bytesWritenInCurrentIteration) {
+            cout << "Error writing current buffer in socket - should retry this part" << endl;
+        }
+
+        bytesWritenInSocket += bytesWritenInCurrentIteration;
+
+    } while (bytesWritenInSocket < totalSize);
+
+    ackReturn = read(sockfd, ackBuffer, sizeof(uint16_t));
+    if (ackReturn == -1) {
+        cout << "nao recebi ack direito" << endl;
+    }
+
+    close(sockfd); // Socket won't close here in production mode*/
     return 0;
+}
+
+int Client::determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket) {
+    if( totalSize - bytesWritenInSocket >= BUFFER_SIZE )
+        return BUFFER_SIZE;
+    else
+        return totalSize - bytesWritenInSocket;
 }
 

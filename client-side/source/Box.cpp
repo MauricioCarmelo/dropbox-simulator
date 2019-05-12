@@ -30,6 +30,7 @@ int Box::open(char *host, int port) {
     con1.username = username;
     c1.establishConnectionType(con1);
 
+    /*
     // open connection 2
     c2 = Client(host, port);
     c2.establishConnectionToHost();
@@ -37,6 +38,7 @@ int Box::open(char *host, int port) {
     con2.type = T2;
     con2.username = username;
     c2.establishConnectionType(con2);
+     */
 
     thread th_console(th_func_monitor_console, c1);
     thread th_inotify(th_func_inotify);
