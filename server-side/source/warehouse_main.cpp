@@ -1,7 +1,7 @@
 #include <iostream>
 #include <sys/socket.h>
-#include "Server.h"
-#include "Warehouse.h"
+#include "../include/Server.h"
+#include "../include/Warehouse.h"
 
 
 int main(int argc, char *argv[]) {

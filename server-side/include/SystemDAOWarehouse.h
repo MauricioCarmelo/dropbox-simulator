@@ -4,7 +4,7 @@
 
 #ifndef DROPBOX_SYSTEMDAOWAREHOUSE_H
 #define DROPBOX_SYSTEMDAOWAREHOUSE_H
-
+#include "../../utils/masterInclude.h"
 
 
 class SystemDAOWarehouse {

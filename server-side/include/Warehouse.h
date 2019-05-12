@@ -6,6 +6,7 @@
 #define DROPBOX_WAREHOUSE_H
 
 #include "Server.h"
+#include "../../utils/masterInclude.h"
 
 class Warehouse {
 public:

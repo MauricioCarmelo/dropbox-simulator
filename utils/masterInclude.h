@@ -21,7 +21,7 @@
 #include <fstream>
 #include <thread>
 #include <vector>
-
+#include <pthread.h>
 
 using namespace std;
 

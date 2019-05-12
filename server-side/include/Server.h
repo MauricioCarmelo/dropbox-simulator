@@ -5,10 +5,9 @@
 #ifndef DROPBOX_SERVER_H
 #define DROPBOX_SERVER_H
 
-#include "../client-side/include/File.h"
-#include "../client-side/include/Client.h"
-#include <pthread.h>
-#include <thread>
+#include "../../client-side/include/File.h"
+#include "../../client-side/include/Client.h"
+#include "../../utils/masterInclude.h"
 
 #define BUFFER_SIZE 4   // fazer um buffer maior, 256
 
