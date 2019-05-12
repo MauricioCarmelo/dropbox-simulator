@@ -1,7 +1,7 @@
-#include "../../utils/masterInclude.h"
+#include "../../utils/include/masterInclude.h"
 #include "../include/Client.h"
 #include "../include/Box.h"
-#include "../../utils/Utility.h"
+#include "../../utils/include/Utility.h"
 
 
 #define USERNAME_SIZE 25

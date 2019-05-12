@@ -3,8 +3,8 @@
 
 #include "Client.h"
 #include "SystemDAO.h"
-#include "../../utils/masterInclude.h"
-#include "../../utils/Instruction.h"
+#include "../../utils/include/masterInclude.h"
+#include "../../utils/include/Instruction.h"
 
 #define SYNC_DIR "sync_dir"
 

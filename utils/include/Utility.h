@@ -1,12 +1,9 @@
 #ifndef DROPBOX_UTILITY_H
 #define DROPBOX_UTILITY_H
 
-#include <iostream>
-#include <string.h>
+
 #include "Instruction.h"
-#include <sys/inotify.h>
-#include <unistd.h>
-#include <sys/poll.h>
+#include "../../utils/include/masterInclude.h"
 
 #define SYNC_DIR "sync_dir"
 

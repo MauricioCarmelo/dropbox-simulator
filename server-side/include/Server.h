@@ -7,7 +7,7 @@
 
 #include "../../client-side/include/File.h"
 #include "../../client-side/include/Client.h"
-#include "../../utils/masterInclude.h"
+#include "../../utils/include/masterInclude.h"
 
 #define BUFFER_SIZE 4   // fazer um buffer maior, 256
 

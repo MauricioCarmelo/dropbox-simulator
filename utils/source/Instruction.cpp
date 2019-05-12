@@ -1,4 +1,4 @@
-#include "Instruction.h"
+#include "../include/Instruction.h"
 
 void Instruction::prepare(char *line) {
     auto cmd_name = strtok(line, " ");
@@ -16,7 +16,7 @@ void Instruction::prepare(char *line) {
                 strcpy(filename, pointer_to_name + 1);
             }
             else{
-                cout << "Error: file parameter from upload command must begin with '/'" << endl;
+                cout << "[Instruction] Error: file parameter from upload command must begin with '/'" << endl;
                 command_id = INVALID_COMMAND;
             }
             break;
@@ -64,16 +64,16 @@ void Instruction::set_command_id() {
 
 void Instruction::print(){
     if(command_id != INVALID_COMMAND){
-        std::cout << "Você digitou o comando " << command_name << " cujo ID eh " << command_id;
+        cout << "[Instruction] Você digitou o comando " << command_name << "[Instruction] cujo ID eh " << command_id;
         if(strcmp(filename, "") != 0)
-            std::cout << " com o arquivo " << path << filename << std::endl;
+            cout << " com o arquivo " << path << filename << endl;
         else
-            std::cout << "\n";
+            cout << "\n";
     }
 }
 
 void Instruction::upload_file(Client client){
-    cout << "Upload function called..." << endl;
+    cout << "[Instruction] Upload function called..." << endl;
 
     char* filepath = (char*)malloc(sizeof(path) + sizeof(filename));
     strcpy(filepath, path);
@@ -88,11 +88,11 @@ void Instruction::upload_file(Client client){
 
         char* fileContent = (char*)malloc(length);
 
-        cout << "Reading " << path << filename << endl;
+        cout << "[Instruction] Reading " << path << filename << endl;
         file_read.read(fileContent, length);
 
         if(file_read){
-            cout << "Whole file read successfully, " << length << " bytes read" << endl;
+            cout << "[Instruction] Whole file read successfully, " << length << " bytes read" << endl;
             cout << "File content: " << fileContent << endl;
 
             file_t file;
@@ -113,14 +113,14 @@ void Instruction::upload_file(Client client){
             cout << newfile.name << ", " << newfile.content << endl;*/
         }
         else
-            cout << "Error: couldn't read whole file" << endl;
+            cout << "[Instruction] Error: couldn't read whole file" << endl;
 
         file_read.close();
 
         delete[] fileContent;
     }
     else
-        cout << "Error: couldn't find file " << path << filename << endl;
+        cout << "[Instruction] Error: couldn't find file " << path << filename << endl;
 
     delete[] filepath;
 }
@@ -130,7 +130,7 @@ void Instruction::download_file(Client client){
 
     // fileContent será recebido do servidor (por parâmetro?)
     // então essas linhas não serão necessárias
-    char str[] = "esse é um exemplo de conteúdo do arquivo recebido do servidor.";
+    char str[] = "[Instruction] esse é um exemplo de conteúdo do arquivo recebido do servidor.";
     char* fileContent = (char*)malloc(sizeof(str));
     strcpy(fileContent, str);
 
@@ -146,11 +146,11 @@ void Instruction::download_file(Client client){
     delete[] fileContent;
     delete[] filepath;
 
-    cout << "Arquivo " << filename << " baixado do servidor" << endl;
+    cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
 }
 
 void Instruction::delete_file(){
-    cout << "Delete function called..." << endl;
+    cout << "[Instruction] Delete function called..." << endl;
 
     char* filepath = (char*)malloc(sizeof(PATH_TO_SYNC_DIR) + sizeof(path) + sizeof(filename));
     strcpy(filepath, PATH_TO_SYNC_DIR);
@@ -161,17 +161,17 @@ void Instruction::delete_file(){
     if(remove_result != 0)
         perror("Error deleting file");
     else
-        cout << "File " << filename << " deleted succesfully" << endl;
+        cout << "[Instruction] File " << filename << "deleted succesfully" << endl;
 
     delete[] filepath;
 }
 
 void Instruction::list_server(){
-    cout << "List server function called..." << endl;
+    cout << "[Instruction] List server function called..." << endl;
 }
 
 void Instruction::list_client(){
-    cout << "List client function called..." << endl;
+    cout << "[Instruction] List client function called..." << endl;
 
     DIR* dir;
     struct dirent* ent;
@@ -187,9 +187,9 @@ void Instruction::list_client(){
 }
 
 void Instruction::get_sync_dir(){
-    cout << "Get sync dir function called..." << endl;
+    cout << "[Instruction] Get sync dir function called..." << endl;
 }
 
 void Instruction::exit(){
-    cout << "Exit function called..." << endl;
+    cout << "[Instruction] Exit function called..." << endl;
 }

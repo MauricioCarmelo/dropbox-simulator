@@ -1,12 +1,10 @@
 #ifndef DROPBOX_INSTRUCTION_H
 #define DROPBOX_INSTRUCTION_H
 
-#include <iostream>
-#include <cstring>
-#include <dirent.h>
-#include <fstream>
-#include "../client-side/include/Client.h"
+
+#include "../../client-side/include/Client.h"
 #include "Utility.h"
+#include "../../utils/include/masterInclude.h"
 
 using namespace std;
 

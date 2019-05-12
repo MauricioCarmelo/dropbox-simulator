@@ -22,6 +22,9 @@
 #include <thread>
 #include <vector>
 #include <pthread.h>
+#include <iostream>
+#include <dirent.h>
+#include <sys/poll.h>
 
 using namespace std;
 
