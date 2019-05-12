@@ -8,11 +8,20 @@
 #include "../../client-side/include/File.h"
 #include "../../client-side/include/Client.h"
 #include "../../utils/include/masterInclude.h"
+#include <string>
+#include <iostream>
 
 #define BUFFER_SIZE 4   // fazer um buffer maior, 256
 
 #define MAX_DEVICES 2
 #define MAX_USERS 5
+
+#define SUCCESS 1
+#define ERROR -1
+
+#define T1 1
+#define T2 2
+#define T3 3
 
 struct Device {
     int id;
@@ -22,9 +31,24 @@ struct Device {
 };
 
 struct User {
-    char nome[25];
+    string name;
     Device devices[MAX_DEVICES];
 };
+
+int initiate_user_controller_structure();
+int insert_user(std::string name);
+User* get_user(std::string name);
+int insert_device(std::string name, int device_id);
+Device *get_device(int device_id, std::string name);
+int number_of_devices(std::string name);
+Device* get_available_device(std::string name);
+int insert_socket(std::string name, int device_id, int socket_descriptor, int socket_type);
+int remove_user(std::string name);
+int is_device_connected(std::string name);
+int number_of_users_logged();
+
+// test
+void print_user_structure();
 
 
 class Server {
@@ -39,7 +63,7 @@ private:
     Client clients[10];
     int semaphore = 0; // we should need this in the future
     pthread_t threads[50];
-    static User users[MAX_USERS];
+    //static User users[MAX_USERS];
 
 public:
 
