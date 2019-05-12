@@ -20,10 +20,10 @@ using namespace std;
 #define PATH_TO_SYNC_DIR "../cmake-build-debug/sync_dir/"
 
 typedef struct file_t{
-    char* name;
+    char name[100];
     char* content;
 } file_t;
-
+class Client;
 class Instruction{
 
 private:

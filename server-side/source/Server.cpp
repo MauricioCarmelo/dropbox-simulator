@@ -29,17 +29,19 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 }
 
 void* Server::terminalThreadFunction(void *arg) {
-    connection_t connection;
+    //connection_t connection;
 
     //std::cout << "terminal thread here" << std::endl;
     int socket = *(int *) arg;
     write(socket,"ack", 3);
 
-    while(1) {
+    /*while(1) {
         read(socket, &connection, sizeof(struct connection));
         write(socket,"ack", 3);
         cout << "[Server] terminal thread user " << connection.username << endl;
-    }
+    }*/
+    packet data_packet;
+    receive_file();
 }
 
 void* Server::serverNotifyThreadFunction(void *arg) {

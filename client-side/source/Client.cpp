@@ -1,4 +1,5 @@
 #include "../include/Client.h"
+#include "../../utils/include/Instruction.h"
 
 Client::Client() {}
 
@@ -48,7 +49,7 @@ int Client::establishConnectionType(connection_t c)
     return 0;
 }
 
-int Client::send(char *data, int size)
+int Client::send(file_t data, int size)
 {
 
     /* send command to warn server that a data packet will be sent */
@@ -61,14 +62,14 @@ int Client::send(char *data, int size)
     return 0;
 }
 
-packet Client::prepare_data_packet(char *data, int size)
+packet Client::prepare_data_packet(file_t data, int size)
 {
     packet data_packet;
 
     data_packet.type = DATA;
     data_packet.length = size;
-    data_packet.payload = (char*)malloc(size);
-    memcpy(data_packet.payload, data, size);
+    //data_packet.payload = data;//(char*)malloc(size);
+    memcpy(&data_packet.payload, &data, size);
 
     return data_packet;
 }
@@ -87,7 +88,7 @@ int Client::send_data_packet(packet data_packet)
         else
             buffer_size = size - sent_bytes;
 
-        memcpy(buffer, data_packet.payload+sent_bytes, buffer_size);
+        memcpy(buffer, &data_packet.payload+sent_bytes, buffer_size);
         //n = write(sockfd, buffer, sizeof(buffer) - size + buffer_size), onde buffer eh a struct
         n = write(sockfd, buffer, buffer_size);
         sent_bytes += n;

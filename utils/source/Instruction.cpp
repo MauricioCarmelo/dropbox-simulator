@@ -96,7 +96,7 @@ void Instruction::upload_file(Client client){
             cout << "File content: " << fileContent << endl;
 
             file_t file;
-            file.name = (char*)malloc(sizeof(filename));
+            //file.name = (char*)malloc(sizeof(filename));
             strcpy(file.name, filename);
             file.content = (char*)malloc(length);
             strcpy(file.content, fileContent);
@@ -105,7 +105,13 @@ void Instruction::upload_file(Client client){
             alloc_unsigned_char_ptr_to_type_T<file_t>(buffer);
             struct_to_unsigned_char_ptr(buffer, file);
 
-            //client.send((char*)buffer, sizeof(buffer));
+            cout << strlen(filename) + length << endl;
+
+            /*ofstream gambiarra("gambiarra.txt");
+            gambiarra.write((char*)&file, strlen(filename) + length + 1);
+            gambiarra.close();*/
+
+            client.send(file, strlen(filename) + length);
 
             /*file_t newfile; newfile.name = (char*)malloc(sizeof(filename));newfile.content = (char*)malloc(sizeof(fileContent));
             unsigned_char_ptr_to_struct(buffer, newfile);

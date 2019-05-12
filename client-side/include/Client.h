@@ -3,6 +3,7 @@
 #define DROPBOX_CLIENT_H
 
 #include "../../utils/include/masterInclude.h"
+#include "../../utils/include/Instruction.h"
 
 
 #define BUFFER_SIZE 4
@@ -12,13 +13,13 @@
 #define T1 1
 #define T2 2
 #define T3 3
-
+//typedef struct file_t file_t;
 using namespace std;
 
 typedef struct packet{
     int16_t type;
     uint16_t length;
-    char* payload;
+    struct file_t*  payload;
 } packet;
 
 typedef struct connection{
@@ -37,13 +38,13 @@ public:
     ~Client() {};
     Client(char *host, int port);
     int establishConnectionToHost();
-    int send(char* buffer, int size);
+    int send(file_t buffer, int size);
 
     int establishConnectionType(connection_t c);
 
     std::string name;
     bool isLogged;
-    packet prepare_data_packet(char *data, int size);
+    packet prepare_data_packet(file_t data, int size);
     int send_data_packet(packet data_packet);
 };
 

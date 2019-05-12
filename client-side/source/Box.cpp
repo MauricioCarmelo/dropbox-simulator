@@ -9,8 +9,8 @@ Box::Box()
 
 int Box::open(char *host, int port) {
 
-    thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify);
+    //thread th_console(th_func_monitor_console, c1);
+    //thread th_inotify(th_func_inotify);
 
     //client = Client(host, port);
     //client.establishConnectionToHost();
@@ -38,10 +38,13 @@ int Box::open(char *host, int port) {
     con2.username = username;
     c2.establishConnectionType(con2);
 
-    while(!exit_command_typed) {
+    thread th_console(th_func_monitor_console, c1);
+    thread th_inotify(th_func_inotify);
+
+    /*while(!exit_command_typed) {
         c1.establishConnectionType(con1);
         c2.establishConnectionType(con2);
-    }
+    }*/
 
     th_console.join();
     th_inotify.join();
