@@ -38,7 +38,7 @@ int Box::open(char *host, int port) {
     con2.username = username;
     c2.establishConnectionType(con2);
 
-    while(1) {
+    while(!exit_command_typed) {
         c1.establishConnectionType(con1);
         c2.establishConnectionType(con2);
     }
