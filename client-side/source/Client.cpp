@@ -72,36 +72,15 @@ filePacket Client::prepareFilePacket(char *filename, int size, char *fileContent
 
 int Client::sendFilePacket(filePacket file_packet)
 {
-    char buffer[BUFFER_SIZE];
-    int bytesCopiedFromPayload = 0;
-    int bytesWritenInSocket = 0;
-    int bytesWritenInCurrentIteration = 0;
-    int totalSize = file_packet.fileSize;
-    int bufferSize;
-
-    //sendDataToSocket(&file_packet.packetType, sizeof(uint64_t));
-    //waitForSocketAck();
+    sendDataToSocket(&file_packet.packetType, sizeof(uint64_t));
+    waitForSocketAck();
     sendDataToSocket(&file_packet.fileSize, sizeof(uint64_t));
     waitForSocketAck();
-
-    do {
-        bufferSize = determineCorrectSizeToBeCopied(totalSize, bytesWritenInSocket);
-
-        memcpy(buffer, file_packet.payload + bytesCopiedFromPayload, bufferSize);
-        bytesCopiedFromPayload += bufferSize;
-
-        bytesWritenInCurrentIteration = sendDataToSocket(buffer, bufferSize);
-        if (bufferSize != bytesWritenInCurrentIteration) {
-            cout << "Client.sendFilePacket: Error writing current buffer in socket" << endl;
-        }
-
-        bytesWritenInSocket += bytesWritenInCurrentIteration;
-
-    } while (bytesWritenInSocket < totalSize);
-
+    sendDataToSocket(file_packet.fileName, strlen(file_packet.fileName));
+    waitForSocketAck();
+    sendLargePayloadToSocket(file_packet.payload, file_packet.fileSize);
     waitForSocketAck();
 
-    close(sockfd); // Socket won't close here in production mode*/
     return 0;
 }
 
@@ -119,6 +98,29 @@ void Client::waitForSocketAck() {
     if (ackReturn == -1) {
         cout << "waitForSocketAck: Failed to receive ack" << endl;
     }
+}
+
+int Client::sendLargePayloadToSocket(char *data, size_t totalSize) {
+    char buffer[BUFFER_SIZE];
+    int bytesCopiedFromPayload = 0;
+    int bytesWritenInSocket = 0;
+    int bytesWritenInCurrentIteration = 0;
+    int bufferSize;
+    do {
+        bufferSize = determineCorrectSizeToBeCopied(totalSize, bytesWritenInSocket);
+
+        memcpy(buffer, data + bytesCopiedFromPayload, bufferSize);
+        bytesCopiedFromPayload += bufferSize;
+
+        bytesWritenInCurrentIteration = sendDataToSocket(buffer, bufferSize);
+        if (bufferSize != bytesWritenInCurrentIteration) {
+            cout << "Client.sendFilePacket: Error writing current buffer in socket" << endl;
+        }
+
+        bytesWritenInSocket += bytesWritenInCurrentIteration;
+
+    } while (bytesWritenInSocket < totalSize);
+    return bytesWritenInSocket;
 }
 
 int Client::determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket) {

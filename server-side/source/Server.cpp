@@ -33,51 +33,62 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 void* Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
 
-    int socket = *(int *) arg;
-    uint64_t payloadSize;
-    char fileBuffer[BUFFER_SIZE];
+    char packetTypeBuffer[sizeof(uint64_t)];
+    readDataFromSocket(arg, packetTypeBuffer, sizeof(uint64_t));
+    writeAckIntoSocket(arg);
+
     char fileSizeBuffer[sizeof(uint64_t)];
+    readDataFromSocket(arg, fileSizeBuffer, sizeof(uint64_t));
+    writeAckIntoSocket(arg);
+
+    char fileNameBuffer[100];
+    readDataFromSocket(arg, fileNameBuffer, sizeof(fileNameBuffer));
+    writeAckIntoSocket(arg);
+
+    uint64_t payloadSize = *(int *)fileSizeBuffer;
+    char payload[payloadSize];
+    readLargePayloadFromSocket(arg, payload, payloadSize);
+    writeAckIntoSocket(arg);
+
+    //this block bellow is going inside the DAO
+    char *prefix = (char*)malloc(200*sizeof(char));
+    strcpy(prefix, "uploaded-");
+    strcat(prefix, fileNameBuffer);
+    ofstream offFile(prefix);
+    offFile.write(payload, payloadSize);
+    offFile.close();
+    cout << "copiei o arquivo no path:" << prefix << endl;
+}
+
+int Server::readDataFromSocket(void *socket, char *buffer, size_t size) {
+    int socketId = *(int *) socket;
+    int bytesReadFromSocket = read(socketId, buffer, size);
+    if (bytesReadFromSocket == -1) {
+        cout << "readDataFromSocket: failed to receive data" << endl;
+    }
+
+}
+
+int Server::readLargePayloadFromSocket(void *socket, char *buffer, size_t size) {
+    int socketId = *(int *) socket;
+    char smallerBuffer[BUFFER_SIZE];
     int bytesReadFromSocket = 0;
     int bytesReadCurrentIteration = 0;
     int bufferSize;
 
-    ofstream offFile("fileUploaded.renomearextensao");
-
-    bytesReadFromSocket = read(socket, fileSizeBuffer, sizeof(uint64_t));
-    if (bytesReadFromSocket == -1) {
-        cout << "erro na leitura do size" << endl;
-    }
-    payloadSize = *(int *)fileSizeBuffer;
-    bytesReadFromSocket = write(socket, fileSizeBuffer, sizeof(uint64_t));
-    if (bytesReadFromSocket == -1) {
-        cout << "erro no ack do size" << endl;
-    }
-
-    char payload[payloadSize];
-
-    bytesReadFromSocket = 0;
-
     do {
-        bufferSize = determineCorrectSizeToBeRead(payloadSize, bytesReadFromSocket);
+        bufferSize = determineCorrectSizeToBeRead(size, bytesReadFromSocket);
 
-        bytesReadCurrentIteration = read(socket, fileBuffer, bufferSize);
+        bytesReadCurrentIteration = read(socketId, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
             cout << "Error reading current buffer in socket - should retry this part" << endl;
         }
 
-        memcpy(payload + bytesReadFromSocket, fileBuffer, bufferSize);
+        memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
 
         bytesReadFromSocket += bufferSize;
-    } while(bytesReadFromSocket < payloadSize);
-
-    //altough payload is a char*, it should have a file_t content, which needs to be disassembled before writing to file
-
-    if ( fileBuffer) {
-        offFile.write(payload, payloadSize);
-        offFile.close();
-        cout << "copiei o arquivo" << endl;
-    }
-
+    } while(bytesReadFromSocket < size);
+    return bytesReadFromSocket;
 }
 
 int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocket) {
@@ -85,6 +96,15 @@ int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocke
         return BUFFER_SIZE;
     else
         return payloadSize - bytesReadFromSocket;
+}
+
+int Server::writeAckIntoSocket(void *socket) {
+    int socketId = *(int *) socket;
+    int bytesWritenIntoSocket = write(socketId, "ack", 3);
+    if (bytesWritenIntoSocket == -1) {
+        cout << "writeAckIntoSocket: failed to write ack" << endl;
+    }
+    return bytesWritenIntoSocket;
 }
 
 void* Server::serverNotifyThreadFunction(void *arg) {

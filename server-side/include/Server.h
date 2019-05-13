@@ -65,6 +65,9 @@ private:
     pthread_t threads[50];
     //static User users[MAX_USERS];
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
+    static int readDataFromSocket(void *socket, char *buffer, size_t size);
+    static int readLargePayloadFromSocket(void *socket, char *buffer, size_t size);
+    static int writeAckIntoSocket(void *socket);
 
 public:
 
