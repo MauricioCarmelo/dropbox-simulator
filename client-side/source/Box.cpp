@@ -7,6 +7,15 @@ Box::Box()
 {
 }
 
+char* Box::get_username() {
+    return username;
+}
+
+void Box::set_username(char *name) {
+    bzero(username, USERNAME_SIZE);
+    strcpy(username, name);
+}
+
 int Box::open(char *host, int port) {
 
     //thread th_console(th_func_monitor_console, c1);
@@ -20,15 +29,22 @@ int Box::open(char *host, int port) {
     // test
     //char frase[] = "frase1";
     //client.send(frase, 7);
-    int username = rand()%10;
+    //int username = rand()%10;
+    int device = rand()%10;
 
-    // open connection 1
+    connection_t con;
+    con.type = T1;
+    strcpy(con.username, username);
+    con.device = device;
+
+    // open connection
     c1 = Client(host, port);
     c1.establishConnectionToHost();
-    connection_t con1;
-    con1.type = T1;
-    con1.username = username;
-    c1.establishConnectionType(con1);
+
+    if (c1.establishConnectionType(con) == -1 ){
+        std::cout << "[Box] ABORTAR, nao foi possivel se conectar" << std::endl;
+        return 0;
+    }
 
     /*
     // open connection 2

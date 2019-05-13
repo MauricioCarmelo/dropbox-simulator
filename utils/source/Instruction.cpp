@@ -79,7 +79,8 @@ void Instruction::upload_file(Client client){
     strcpy(filepath, path);
     strcat(filepath, filename);
 
-    ifstream file_read(filepath);
+    //ifstream file_read(filepath);
+    ifstream file_read("file.txt");
 
     if(file_read){
         file_read.seekg(0, file_read.end);
@@ -105,13 +106,13 @@ void Instruction::upload_file(Client client){
             alloc_unsigned_char_ptr_to_type_T<file_t>(buffer);
             struct_to_unsigned_char_ptr(buffer, file);
 
-            cout << strlen(filename) + length << endl;
+            //cout << strlen(filename) + length << endl;
 
             /*ofstream gambiarra("gambiarra.txt");
             gambiarra.write((char*)&file, strlen(filename) + length + 1);
             gambiarra.close();*/
 
-            client.send(file, strlen(filename) + length);
+            client.send(file, 100 + length);
 
             /*file_t newfile; newfile.name = (char*)malloc(sizeof(filename));newfile.content = (char*)malloc(sizeof(fileContent));
             unsigned_char_ptr_to_struct(buffer, newfile);

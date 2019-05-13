@@ -32,18 +32,30 @@ int Client::establishConnectionToHost()
 int Client::establishConnectionType(connection_t c)
 {
     int n;
-    char buffer[100];
-    //char frase[] = "frase1";
-    //memcpy(buffer, frase, 7);
+    char response[100];
+    bzero(response, 100);
     n = write(sockfd, &c, sizeof(struct connection));
-    n = read(sockfd, buffer, 100);
 
-
-    //n = write(sockfd, buffer, 7);
-
+    n = read(sockfd, response, 100);
 
     if (n < 0)
         cout << " [Client] ERROR reading from socket on  establishConnectionType()" << std::endl;
+
+    if (strcmp(response, "ack") == 0)
+        return -1;
+    else if (strcmp(response, "nack1") == 0) // not possible to insert user
+        return -1;
+    else if (strcmp(response, "nack2") == 0) // max number of users reached
+        return -1;
+    else if (strcmp(response, "nack3") == 0) // max number of devices reached
+        return -1;
+    else if (strcmp(response, "nack4") == 0) // this device is already connected
+        return -1;
+    else if (strcmp(response, "nack5") == 0) // user inserted but error while inserting device
+        return -1;
+    //n = write(sockfd, buffer, 7);
+
+
 
     //close(sockfd);
     return 0;
@@ -67,7 +79,7 @@ packet Client::prepare_data_packet(file_t data, int size)
     packet data_packet;
 
     data_packet.length = size;
-    //data_packet.payload = &data;//(char*)malloc(size);
+    data_packet.payload = &data;//(char*)malloc(size);
     memcpy(data_packet.payload->name, data.name, strlen(data.name));
     memcpy(data_packet.payload->content, data.content, size - strlen(data.name));
 
@@ -95,6 +107,10 @@ int Client::send_data_packet(packet data_packet)
         cout << "nao recebi ack direito" << endl;
     }
 
+    // send name first
+
+
+    // send content
     do {
         bufferSize = determineCorrectSizeToBeCopied(totalSize, bytesWritenInSocket);
 

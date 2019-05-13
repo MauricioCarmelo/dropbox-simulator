@@ -4,7 +4,7 @@
 #include "../../utils/include/Utility.h"
 
 
-#define USERNAME_SIZE 25
+
 
 using namespace std;
 
@@ -17,8 +17,9 @@ int main(int argc, char *argv[]) {
         cout << "./box <user> <address> <port>" << std::endl;
         exit(1);
     }
-
+    bzero(username, USERNAME_SIZE);
     strcpy(username, argv[1]);
+    
     char *host = (char*)malloc(strlen(argv[2]));
     strcpy(host, argv[2]);
     int port = atoi(argv[3]);
@@ -27,6 +28,7 @@ int main(int argc, char *argv[]) {
     thread th_inotify(inotify_watcher);*/
 
     Box box;
+    box.set_username(username);         // this is required
     box.open(host, port);
     /*th_monitor_console.join();
     th_inotify.join();*/

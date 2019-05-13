@@ -7,6 +7,7 @@
 #include "../../utils/include/Instruction.h"
 
 #define SYNC_DIR "sync_dir"
+#define USERNAME_SIZE 100
 
 using namespace std;
 class Instruction;
@@ -21,6 +22,9 @@ private:
 public:
     Box();
     ~Box() {};
+    char username[USERNAME_SIZE];
+    char* get_username();
+    void set_username(char *name);
     int open(char *host, int port);
     bool createSyncDir();
     int read_file(char* fileContent, std::string filePath);

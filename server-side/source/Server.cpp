@@ -105,19 +105,80 @@ void *Server::mediatorThread(void *arg) {
     if(ack == -1) {
         cout << "erro no read do connection type" << endl;
     }
-    ack = write(socket,"ack", 3);
-    if(ack == -1) {
-        cout << "erro no write ack no connection type" << endl;
+
+    // check initial configuration
+    //char username = connection.username;
+    char username[100];
+    strcpy(username, connection.username);
+    std::string user(username);
+    auto device_id = connection.device;
+
+    auto insert_user_result = insert_user(user);
+
+    if ( insert_user_result == ERROR ) {
+        ack = write(socket,"nack1", 5);
+        if(ack == -1) {
+            cout << "erro no write nack1 no connection type" << endl;
+        }
+        // TERMINAR A THREAD AQUI
+    }
+    else if( insert_user_result == MAX_USERS_REACHED) {
+        ack = write(socket,"nack2", 5);
+        if(ack == -1) {
+            cout << "erro no write nack2 no connection type" << endl;
+        }
+        // TERMINAR A THREAD AQUI
+    }
+    else if( insert_user_result == USER_ALREADY_CONNECTED) {
+
+        auto insert_device_result = insert_device(user, device_id);
+        if( insert_device_result == MAX_DEVICES_REACHED ) {
+            ack = write(socket,"nack3", 5);
+            if(ack == -1) {
+                cout << "erro no write nack3 no connection type" << endl;
+            }
+            // TERMINAR A THREAD AQUI
+        }
+        else if ( insert_device_result == DEVICE_ALREADY_CONNECTED) {
+
+            // VER QUAL EH O T E COLOCAR NO SOCKET DO DEVICE CORRETO
+
+            ack = write(socket,"nack4", 5);
+            if(ack == -1) {
+                cout << "erro no write nack4 no connection type" << endl;
+            }
+
+            // VERIFICAR SE O SOCKET REFERENTE AO TIPO DE CONEXAO ESTA CONECTADO. SE SIM, TERMINAR EXECUCAO
+            // SE NAO, INSERIR O SOCKET NA ESTRUTURA DO USUARIO, NO DEVICE CORRESPONDENTE
+        }
+        else if (insert_device_result == SUCCESS) {
+            ack = write(socket,"ack", 3);
+            if(ack == -1) {
+                cout << "erro no write ack no connection type" << endl;
+            }
+            // THREAD SEGUE EXECUCAO
+        }
+
+    }
+    else if( insert_user_result == SUCCESS ) {
+        auto insert_device_result = insert_device(user, device_id);
+        if( insert_device_result == ERROR ) {
+            ack = write(socket,"nack5", 5);
+            if(ack == -1) {
+                cout << "erro no write nack3 no connection type" << endl;
+            }
+            // REMOVE USER
+            // TERMINAR A THREAD AQUI
+        }
+        else if (insert_user_result == SUCCESS) {
+            ack = write(socket, "ack", 3);
+            if(ack == -1) {
+                cout << "erro no write nack3 no connection type" << endl;
+            }
+            // THREAD SEGUE EXECUCAO
+        }
     }
 
-    // checar se o usuario esta conectado
-
-        // se ja tiver max usuarios conectados, cancela o box
-
-        // se usuario nao esta conectado, alocar espaco para o user, com o nome e id do device atual
-
-        // Se o usuario esta conectado somente com um device (ou menos que o MAX_USERS), criar nova estrutura
-        // de device e inserir no espaco disponivel dentro do usuario
 
     if(connection.type == T1) {
         // inserir socket1 na estrutura de device do usuario
@@ -324,6 +385,12 @@ int insert_device(std::string name, int device_id)
     auto user = get_user(name);
     if (user == nullptr) {
         std::cout << "user not found" << std::endl;
+        return ERROR;
+    }
+
+    auto dev_aux = get_device(device_id, name);
+    if (dev_aux != nullptr) {
+        std::cout << "device already connected" << std::endl;
         return ERROR;
     }
 

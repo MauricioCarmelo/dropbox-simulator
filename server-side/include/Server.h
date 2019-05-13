@@ -19,6 +19,12 @@
 #define SUCCESS 1
 #define ERROR -1
 
+#define MAX_USERS_REACHED 2
+#define USER_ALREADY_CONNECTED 3
+
+#define MAX_DEVICES_REACHED 4
+#define DEVICE_ALREADY_CONNECTED 5
+
 #define T1 1
 #define T2 2
 #define T3 3
