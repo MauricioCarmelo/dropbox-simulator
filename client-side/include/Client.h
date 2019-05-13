@@ -9,6 +9,7 @@
 #define BUFFER_SIZE 4
 #define CMD 1
 #define FILE 2
+#define CONN 3
 
 #define T1 1
 #define T2 2
@@ -23,7 +24,8 @@ typedef struct filePacket{
 } filePacket;
 
 typedef struct connection{
-    int16_t type;
+    uint64_t packetType;
+    uint64_t socketType;
     int16_t username; // mudar pra char[]
     // mandar o id do device
 } connection_t;

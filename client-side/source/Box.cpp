@@ -26,7 +26,8 @@ int Box::open(char *host, int port) {
     c1 = Client(host, port);
     c1.establishConnectionToHost();
     connection_t con1;
-    con1.type = T1;
+    con1.packetType = CONN;
+    con1.socketType = T1;
     con1.username = username;
     c1.establishConnectionType(con1);
 

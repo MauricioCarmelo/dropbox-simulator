@@ -29,23 +29,11 @@ int Client::establishConnectionToHost()
     return 0;
 }
 
-int Client::establishConnectionType(connection_t c)
+int Client::establishConnectionType(connection_t connection)
 {
-    int n;
-    char buffer[100];
-    //char frase[] = "frase1";
-    //memcpy(buffer, frase, 7);
-    n = write(sockfd, &c, sizeof(struct connection));
-    n = read(sockfd, buffer, 100);
+    sendLargePayloadToSocket((char*)&connection, sizeof(struct connection));
+    waitForSocketAck();
 
-
-    //n = write(sockfd, buffer, 7);
-
-
-    if (n < 0)
-        cout << " [Client] ERROR reading from socket on  establishConnectionType()" << std::endl;
-
-    //close(sockfd);
     return 0;
 }
 

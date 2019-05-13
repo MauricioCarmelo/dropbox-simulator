@@ -19,6 +19,10 @@
 #define SUCCESS 1
 #define ERROR -1
 
+#define CMD 1
+#define FILE 2
+#define CONN 3
+
 #define T1 1
 #define T2 2
 #define T3 3

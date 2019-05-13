@@ -119,17 +119,9 @@ void *Server::mediatorThread(void *arg) {
     cout << "[Server] got in the mediator thread" << endl;
     connection_t connection;
     pthread_t thread;
-    int socket = *(int *) arg;
-    int ack;
 
-    ack = read(socket, &connection, sizeof(struct connection));
-    if(ack == -1) {
-        cout << "erro no read do connection type" << endl;
-    }
-    ack = write(socket,"ack", 3);
-    if(ack == -1) {
-        cout << "erro no write ack no connection type" << endl;
-    }
+    readLargePayloadFromSocket(arg, (char*)&connection, sizeof(struct connection));
+    writeAckIntoSocket(arg);
 
     // checar se o usuario esta conectado
 
@@ -140,22 +132,25 @@ void *Server::mediatorThread(void *arg) {
         // Se o usuario esta conectado somente com um device (ou menos que o MAX_USERS), criar nova estrutura
         // de device e inserir no espaco disponivel dentro do usuario
 
-    if(connection.type == T1) {
-        // inserir socket1 na estrutura de device do usuario
-        pthread_create(&thread, NULL, &Server::terminalThreadFunction, arg);
+    if (connection.packetType == CONN) {
+        if(connection.socketType== T1) {
+            // inserir socket1 na estrutura de device do usuario
+            pthread_create(&thread, NULL, &Server::terminalThreadFunction, arg);
+        }
 
+        if(connection.socketType== T2) {
+            // inserir socket2 na estrutura de device do usuario
+            pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
+        }
+
+        if(connection.socketType== T3) {
+            // inserir socket3 na estrutura de device do usuario
+            pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
+        }
+    } else {
+        cout << "Expected CONN packet in mediator and received something else" << endl;
+        pthread_exit(arg);
     }
-
-    if(connection.type == T2) {
-        // inserir socket2 na estrutura de device do usuario
-        pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
-    }
-
-    if(connection.type == T3) {
-        // inserir socket3 na estrutura de device do usuario
-        pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
-    }
-
 }
 
 int Server::run() {
@@ -183,16 +178,16 @@ int Server::handle_type(int s)
     //n = read(newsockfd, buffer, 7);
     cout << "[Server] opa4" << endl;
     //std::cout << buffer << std::endl;
-    cout << c.type << endl;
+    cout << c.socketType << endl;
     if (n < 0) {
         cout << "[Server] ERROR reading from socket" << endl;
         return 1;
     }
     n = write(s, "ack", 3);
 
-    if(c.type == T1)
+    if(c.socketType == T1)
         cout << "[Server] Tipo 1" << endl;
-    else if(c.type == T2)
+    else if(c.socketType == T2)
         cout << "[Server] Tipo 2" << endl;
     else
         cout << "[Server] Tipo nao definido" << endl;
