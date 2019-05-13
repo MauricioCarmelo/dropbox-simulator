@@ -89,6 +89,7 @@ public:
     static void *terminalThreadFunction(void *arg);
     static void *iNotifyThreadFunction(void *arg);
     static void *serverNotifyThreadFunction(void *arg);
+    static void *uploadFileCommandThread(void *arg);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 

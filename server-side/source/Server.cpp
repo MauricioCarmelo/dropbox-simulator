@@ -30,8 +30,8 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
     return 0;
 }
 
-void* Server::terminalThreadFunction(void *arg) {
-    std::cout << "terminal thread here" << std::endl;
+void* Server::uploadFileCommandThread(void *arg) {
+    cout << "Upload File Thread" << endl;
 
     char packetTypeBuffer[sizeof(uint64_t)];
     readDataFromSocket(arg, packetTypeBuffer, sizeof(uint64_t));
@@ -58,6 +58,15 @@ void* Server::terminalThreadFunction(void *arg) {
     offFile.write(payload, payloadSize);
     offFile.close();
     cout << "copiei o arquivo no path:" << prefix << endl;
+}
+
+void* Server::terminalThreadFunction(void *arg) {
+    std::cout << "terminal thread here" << std::endl;
+
+    //going to expect CMD packet here, while this doesnt happen, this is the upload command
+    pthread_t thread;
+    pthread_create(&thread, NULL, &Server::uploadFileCommandThread, arg);
+
 }
 
 int Server::readDataFromSocket(void *socket, char *buffer, size_t size) {
