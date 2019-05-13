@@ -49,74 +49,76 @@ int Client::establishConnectionType(connection_t c)
     return 0;
 }
 
-int Client::send(char *filename, int size, char *fileContent)
+int Client::sendFile(char *filename, int size, char *fileContent)
 {
-
-    /* send command to warn server that a data packet will be sent */
-    // send_command_packet();
-
-    /* send the packet */
-    packet data_packet = prepare_data_packet(filename, size, fileContent);
-    send_data_packet(data_packet);
+    filePacket file_packet = prepareFilePacket(filename, size, fileContent);
+    sendFilePacket(file_packet);
 
     return 0;
 }
 
-packet Client::prepare_data_packet(char *filename, int size, char *fileContent)
+filePacket Client::prepareFilePacket(char *filename, int size, char *fileContent)
 {
-    packet data_packet;
+    filePacket file_packet;
 
-    data_packet.length = size;
-    data_packet.payload = (char*)malloc(size);
-    memcpy(data_packet.fileName, filename, strlen(filename));
-    memcpy(data_packet.payload, fileContent, size);
+    file_packet.packetType = FILE;
+    file_packet.fileSize = size;
+    memcpy(file_packet.fileName, filename, strlen(filename));
+    file_packet.payload = (char*)malloc(size);
+    memcpy(file_packet.payload, fileContent, size);
 
-    return data_packet;
+    return file_packet;
 }
 
-int Client::send_data_packet(packet data_packet)
+int Client::sendFilePacket(filePacket file_packet)
 {
-    int returnFromWrittenSize;
-    int ackReturn;
-    char ackBuffer[sizeof(uint64_t)];
     char buffer[BUFFER_SIZE];
     int bytesCopiedFromPayload = 0;
     int bytesWritenInSocket = 0;
     int bytesWritenInCurrentIteration = 0;
-    int totalSize = data_packet.length;
+    int totalSize = file_packet.fileSize;
     int bufferSize;
 
-    returnFromWrittenSize = write(sockfd, &data_packet.length, sizeof(uint64_t));
-    if (returnFromWrittenSize != sizeof(uint64_t)) {
-        cout << "nao to enviando o length direito" << endl;
-    }
-    ackReturn = read(sockfd, ackBuffer, sizeof(uint64_t));
-    if (ackReturn == -1) {
-        cout << "nao recebi ack direito" << endl;
-    }
+    //sendDataToSocket(&file_packet.packetType, sizeof(uint64_t));
+    //waitForSocketAck();
+    sendDataToSocket(&file_packet.fileSize, sizeof(uint64_t));
+    waitForSocketAck();
 
     do {
         bufferSize = determineCorrectSizeToBeCopied(totalSize, bytesWritenInSocket);
 
-        memcpy(buffer, data_packet.payload + bytesCopiedFromPayload, bufferSize);
+        memcpy(buffer, file_packet.payload + bytesCopiedFromPayload, bufferSize);
         bytesCopiedFromPayload += bufferSize;
 
-        bytesWritenInCurrentIteration = write(sockfd, buffer, bufferSize);
+        bytesWritenInCurrentIteration = sendDataToSocket(buffer, bufferSize);
         if (bufferSize != bytesWritenInCurrentIteration) {
-            cout << "Error writing current buffer in socket - should retry this part" << endl;
+            cout << "Client.sendFilePacket: Error writing current buffer in socket" << endl;
         }
 
         bytesWritenInSocket += bytesWritenInCurrentIteration;
 
     } while (bytesWritenInSocket < totalSize);
 
-    ackReturn = read(sockfd, ackBuffer, sizeof(uint64_t));
-    if (ackReturn == -1) {
-        cout << "nao recebi ack direito" << endl;
-    }
+    waitForSocketAck();
 
     close(sockfd); // Socket won't close here in production mode*/
     return 0;
+}
+
+int Client::sendDataToSocket(void *data, size_t size) {
+    int bytesSocketReceived = write(sockfd, data, size);
+    if (bytesSocketReceived != size) {
+        cout << "sendDataToSocket: Failed to send data to socket" << endl;
+    }
+    return bytesSocketReceived;
+}
+
+void Client::waitForSocketAck() {
+    char ackBuffer[sizeof(uint64_t)];
+    int ackReturn = read(sockfd, ackBuffer, sizeof(uint64_t));
+    if (ackReturn == -1) {
+        cout << "waitForSocketAck: Failed to receive ack" << endl;
+    }
 }
 
 int Client::determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket) {

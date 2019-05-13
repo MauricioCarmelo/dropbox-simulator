@@ -66,20 +66,6 @@ bool Box::createSyncDir( ) {
     return false;
 }
 
-int Box::read_file(char* fileContent, string filePath) {
-
-    ifstream in(filePath);
-    string contents((istreambuf_iterator<char>(in)),
-                         istreambuf_iterator<char>());
-
-    fileContent = new char [contents.length()+1];
-    strcpy (fileContent, contents.c_str());
-
-
-    return contents.length();
-
-}
-
 void* Box::th_func_monitor_console(Client client){
     cout << "[Box] Monitor console thread" << endl;
 
