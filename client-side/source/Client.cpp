@@ -49,27 +49,27 @@ int Client::establishConnectionType(connection_t c)
     return 0;
 }
 
-int Client::send(file_t data, int size)
+int Client::send(char *filename, int size, char *fileContent)
 {
 
     /* send command to warn server that a data packet will be sent */
     // send_command_packet();
 
     /* send the packet */
-    packet data_packet = prepare_data_packet(data, size);
+    packet data_packet = prepare_data_packet(filename, size, fileContent);
     send_data_packet(data_packet);
 
     return 0;
 }
 
-packet Client::prepare_data_packet(file_t data, int size)
+packet Client::prepare_data_packet(char *filename, int size, char *fileContent)
 {
     packet data_packet;
 
     data_packet.length = size;
-    //data_packet.payload = &data;//(char*)malloc(size);
-    memcpy(data_packet.payload->name, data.name, strlen(data.name));
-    memcpy(data_packet.payload->content, data.content, size - strlen(data.name));
+    data_packet.payload = (char*)malloc(size);
+    memcpy(data_packet.fileName, filename, strlen(filename));
+    memcpy(data_packet.payload, fileContent, size);
 
     return data_packet;
 }
@@ -78,7 +78,7 @@ int Client::send_data_packet(packet data_packet)
 {
     int returnFromWrittenSize;
     int ackReturn;
-    char ackBuffer[sizeof(uint16_t)];
+    char ackBuffer[sizeof(uint64_t)];
     char buffer[BUFFER_SIZE];
     int bytesCopiedFromPayload = 0;
     int bytesWritenInSocket = 0;
@@ -86,20 +86,17 @@ int Client::send_data_packet(packet data_packet)
     int totalSize = data_packet.length;
     int bufferSize;
 
-    returnFromWrittenSize = write(sockfd, &data_packet.length, sizeof(uint16_t));
-    if (returnFromWrittenSize != sizeof(uint16_t)) {
+    returnFromWrittenSize = write(sockfd, &data_packet.length, sizeof(uint64_t));
+    if (returnFromWrittenSize != sizeof(uint64_t)) {
         cout << "nao to enviando o length direito" << endl;
     }
-    ackReturn = read(sockfd, ackBuffer, sizeof(uint16_t));
+    ackReturn = read(sockfd, ackBuffer, sizeof(uint64_t));
     if (ackReturn == -1) {
         cout << "nao recebi ack direito" << endl;
     }
 
     do {
         bufferSize = determineCorrectSizeToBeCopied(totalSize, bytesWritenInSocket);
-
-        char buffertest[data_packet.length];
-        memcpy(buffertest, data_packet.payload, data_packet.length);
 
         memcpy(buffer, data_packet.payload + bytesCopiedFromPayload, bufferSize);
         bytesCopiedFromPayload += bufferSize;
@@ -113,7 +110,7 @@ int Client::send_data_packet(packet data_packet)
 
     } while (bytesWritenInSocket < totalSize);
 
-    ackReturn = read(sockfd, ackBuffer, sizeof(uint16_t));
+    ackReturn = read(sockfd, ackBuffer, sizeof(uint64_t));
     if (ackReturn == -1) {
         cout << "nao recebi ack direito" << endl;
     }

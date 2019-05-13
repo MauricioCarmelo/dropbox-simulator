@@ -17,8 +17,9 @@
 using namespace std;
 
 typedef struct packet{
-    uint16_t length;
-    struct file_t*  payload;
+    char *fileName;
+    uint64_t length;
+    char *payload;
 } packet;
 
 typedef struct connection{
@@ -38,13 +39,13 @@ public:
     ~Client() {};
     Client(char *host, int port);
     int establishConnectionToHost();
-    int send(file_t buffer, int size);
+    int send(char *filename, int size, char *fileContent);
 
     int establishConnectionType(connection_t c);
 
     std::string name;
     bool isLogged;
-    packet prepare_data_packet(file_t data, int size);
+    packet prepare_data_packet(char *filename, int size, char *fileContent);
     int send_data_packet(packet data_packet);
 };
 

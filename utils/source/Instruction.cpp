@@ -79,7 +79,7 @@ void Instruction::upload_file(Client client){
     strcpy(filepath, path);
     strcat(filepath, filename);
 
-    ifstream file_read(filepath);
+    ifstream file_read(filepath, ifstream::binary);
 
     if(file_read){
         file_read.seekg(0, file_read.end);
@@ -111,7 +111,7 @@ void Instruction::upload_file(Client client){
             gambiarra.write((char*)&file, strlen(filename) + length + 1);
             gambiarra.close();*/
 
-            client.send(file, strlen(filename) + length);
+            client.send(filename, length, fileContent);
 
             /*file_t newfile; newfile.name = (char*)malloc(sizeof(filename));newfile.content = (char*)malloc(sizeof(fileContent));
             unsigned_char_ptr_to_struct(buffer, newfile);

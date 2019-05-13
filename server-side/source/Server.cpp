@@ -34,21 +34,21 @@ void* Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
 
     int socket = *(int *) arg;
-    int payloadSize;
+    uint64_t payloadSize;
     char fileBuffer[BUFFER_SIZE];
-    char fileSizeBuffer[sizeof(uint16_t)];
+    char fileSizeBuffer[sizeof(uint64_t)];
     int bytesReadFromSocket = 0;
     int bytesReadCurrentIteration = 0;
     int bufferSize;
 
-    ofstream offFile("out.txt");
+    ofstream offFile("fileUploaded.renomearextensao");
 
-    bytesReadFromSocket = read(socket, fileSizeBuffer, sizeof(uint16_t));
+    bytesReadFromSocket = read(socket, fileSizeBuffer, sizeof(uint64_t));
     if (bytesReadFromSocket == -1) {
         cout << "erro na leitura do size" << endl;
     }
     payloadSize = *(int *)fileSizeBuffer;
-    bytesReadFromSocket = write(socket, fileSizeBuffer, sizeof(uint16_t));
+    bytesReadFromSocket = write(socket, fileSizeBuffer, sizeof(uint64_t));
     if (bytesReadFromSocket == -1) {
         cout << "erro no ack do size" << endl;
     }
@@ -65,7 +65,7 @@ void* Server::terminalThreadFunction(void *arg) {
             cout << "Error reading current buffer in socket - should retry this part" << endl;
         }
 
-        strcat(payload, fileBuffer);
+        memcpy(payload + bytesReadFromSocket, fileBuffer, bufferSize);
 
         bytesReadFromSocket += bufferSize;
     } while(bytesReadFromSocket < payloadSize);
@@ -75,6 +75,7 @@ void* Server::terminalThreadFunction(void *arg) {
     if ( fileBuffer) {
         offFile.write(payload, payloadSize);
         offFile.close();
+        cout << "copiei o arquivo" << endl;
     }
 
 }
@@ -177,47 +178,6 @@ int Server::handle_type(int s)
         cout << "[Server] Tipo nao definido" << endl;
 
     return 0;
-}
-
-int Server::receive_file() {
-
-    char message[100];  // isso nao vai ficar aqui
-    int file_size = 7;  // determinar o tamanho do arquivo de outra maneira
-    int bytes_received;
-    char buffer[BUFFER_SIZE];
-
-    if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
-        cout << "[Server] ERROR on accept" << endl;
-
-    bytes_received = 0;
-    while(bytes_received < file_size) {
-        bzero(buffer, BUFFER_SIZE);
-
-        /* read from the socket */
-        n = read(newsockfd, buffer, BUFFER_SIZE);
-        if (n < 0)
-            cout << "[Server] ERROR reading from socket" << endl;
-
-        memcpy(message+bytes_received, buffer, n);
-        bytes_received = bytes_received + n;
-        //std::cout << "Bytes received: " << bytes_received << std::endl;
-    }
-    n = write(newsockfd, "ack", 3);
-    if (n < 0)
-        cout << "[Server] ERROR writing to socket" << endl;
-
-    for (int i=0; i<bytes_received; i++){
-        cout << message[i];
-    }
-    cout << endl;
-
-    /*for (char c: message) {
-        std::cout << c;
-    }*/
-
-    //close(newsockfd);
-    //close(sockfd);
-    return bytes_received;
 }
 
 int Server::countUserConnections(string user) {
