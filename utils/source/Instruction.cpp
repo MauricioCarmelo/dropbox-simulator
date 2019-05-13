@@ -77,7 +77,6 @@ void Instruction::upload_file(Client client){
 
     char* filepath = (char*)malloc(sizeof(path) + sizeof(filename));
     strcpy(filepath, path);
-    strcat(filepath, filename);
 
     ifstream file_read(filepath, ifstream::binary);
 
