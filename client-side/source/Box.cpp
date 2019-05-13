@@ -40,6 +40,11 @@ int Box::open(char *host, int port) {
     // open connection
     c1 = Client(host, port);
     c1.establishConnectionToHost();
+    connection_t con1;
+    con1.packetType = CONN;
+    con1.socketType = T1;
+    con1.username = username;
+    //c1.establishConnectionType(con1);
 
     if (c1.establishConnectionType(con) == -1 ){
         std::cout << "[Box] ABORTAR, nao foi possivel se conectar" << std::endl;
@@ -80,20 +85,6 @@ bool Box::createSyncDir( ) {
     if ( sda.createDir(path) )
         return true;
     return false;
-}
-
-int Box::read_file(char* fileContent, string filePath) {
-
-    ifstream in(filePath);
-    string contents((istreambuf_iterator<char>(in)),
-                         istreambuf_iterator<char>());
-
-    fileContent = new char [contents.length()+1];
-    strcpy (fileContent, contents.c_str());
-
-
-    return contents.length();
-
 }
 
 void* Box::th_func_monitor_console(Client client){

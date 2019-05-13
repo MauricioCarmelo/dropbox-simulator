@@ -8,21 +8,24 @@
 
 #define BUFFER_SIZE 4
 #define CMD 1
-#define DATA 2
+#define FILE 2
+#define CONN 3
 
 #define T1 1
 #define T2 2
 #define T3 3
-//typedef struct file_t file_t;
 using namespace std;
 
-typedef struct packet{
-    uint16_t length;
-    struct file_t*  payload;
-} packet;
+typedef struct filePacket{
+    uint64_t packetType;
+    uint64_t fileSize;
+    char *fileName;
+    char *payload;
+} filePacket;
 
 typedef struct connection{
-    int16_t type;
+    uint64_t packetType;
+    uint64_t socketType;
     int device;
     char username[100]; // mudar pra char[]
     // mandar o id do device
@@ -33,20 +36,21 @@ private:
     int sockfd;
     struct sockaddr_in serv_addr;
     struct hostent *server;
+    filePacket prepareFilePacket(char *filename, int size, char *fileContent);
+    int sendFilePacket(filePacket file_packet);
     int determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket);
+    int sendDataToSocket(void *data, size_t size);
+    int sendLargePayloadToSocket(char *data, size_t totalSize);
+    void waitForSocketAck();
 public:
     Client();
     ~Client() {};
     Client(char *host, int port);
     int establishConnectionToHost();
-    int send(file_t buffer, int size);
-
+    int sendFile(char *filename, int size, char *fileContent);
     int establishConnectionType(connection_t c);
-
     std::string name;
     bool isLogged;
-    packet prepare_data_packet(file_t data, int size);
-    int send_data_packet(packet data_packet);
 };
 
 #endif //DROPBOX_CLIENT_H

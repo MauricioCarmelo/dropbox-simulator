@@ -77,10 +77,8 @@ void Instruction::upload_file(Client client){
 
     char* filepath = (char*)malloc(sizeof(path) + sizeof(filename));
     strcpy(filepath, path);
-    strcat(filepath, filename);
 
-    //ifstream file_read(filepath);
-    ifstream file_read("file.txt");
+    ifstream file_read(filepath, ifstream::binary);
 
     if(file_read){
         file_read.seekg(0, file_read.end);
@@ -96,28 +94,7 @@ void Instruction::upload_file(Client client){
             cout << "[Instruction] Whole file read successfully, " << length << " bytes read" << endl;
             cout << "File content: " << fileContent << endl;
 
-            file_t file;
-            //file.name = (char*)malloc(sizeof(filename));
-            strcpy(file.name, filename);
-            file.content = (char*)malloc(length);
-            strcpy(file.content, fileContent);
-
-            unsigned char* buffer;
-            alloc_unsigned_char_ptr_to_type_T<file_t>(buffer);
-            struct_to_unsigned_char_ptr(buffer, file);
-
-            //cout << strlen(filename) + length << endl;
-
-            /*ofstream gambiarra("gambiarra.txt");
-            gambiarra.write((char*)&file, strlen(filename) + length + 1);
-            gambiarra.close();*/
-
-            client.send(file, 100 + length);
-
-            /*file_t newfile; newfile.name = (char*)malloc(sizeof(filename));newfile.content = (char*)malloc(sizeof(fileContent));
-            unsigned_char_ptr_to_struct(buffer, newfile);
-            cout << file.name << ", " << file.content << endl;
-            cout << newfile.name << ", " << newfile.content << endl;*/
+            client.sendFile(filename, length, fileContent);
         }
         else
             cout << "[Instruction] Error: couldn't read whole file" << endl;

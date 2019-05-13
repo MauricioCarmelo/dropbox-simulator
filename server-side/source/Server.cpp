@@ -30,53 +30,73 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
     return 0;
 }
 
+void* Server::uploadFileCommandThread(void *arg) {
+    cout << "Upload File Thread" << endl;
+
+    char packetTypeBuffer[sizeof(uint64_t)];
+    readDataFromSocket(arg, packetTypeBuffer, sizeof(uint64_t));
+    writeAckIntoSocket(arg);
+
+    char fileSizeBuffer[sizeof(uint64_t)];
+    readDataFromSocket(arg, fileSizeBuffer, sizeof(uint64_t));
+    writeAckIntoSocket(arg);
+
+    char fileNameBuffer[100];
+    readDataFromSocket(arg, fileNameBuffer, sizeof(fileNameBuffer));
+    writeAckIntoSocket(arg);
+
+    uint64_t payloadSize = *(int *)fileSizeBuffer;
+    char payload[payloadSize];
+    readLargePayloadFromSocket(arg, payload, payloadSize);
+    writeAckIntoSocket(arg);
+
+    //this block bellow is going inside the DAO
+    char *prefix = (char*)malloc(200*sizeof(char));
+    strcpy(prefix, "uploaded-");
+    strcat(prefix, fileNameBuffer);
+    ofstream offFile(prefix);
+    offFile.write(payload, payloadSize);
+    offFile.close();
+    cout << "copiei o arquivo no path:" << prefix << endl;
+}
+
 void* Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
 
-    int socket = *(int *) arg;
-    int payloadSize;
-    char fileBuffer[BUFFER_SIZE];
-    char fileSizeBuffer[sizeof(uint16_t)];
+    //going to expect CMD packet here, while this doesnt happen, this is the upload command
+    pthread_t thread;
+    pthread_create(&thread, NULL, &Server::uploadFileCommandThread, arg);
+
+}
+
+int Server::readDataFromSocket(void *socket, char *buffer, size_t size) {
+    int socketId = *(int *) socket;
+    int bytesReadFromSocket = read(socketId, buffer, size);
+    if (bytesReadFromSocket == -1) {
+        cout << "readDataFromSocket: failed to receive data" << endl;
+    }
+}
+
+int Server::readLargePayloadFromSocket(void *socket, char *buffer, size_t size) {
+    int socketId = *(int *) socket;
+    char smallerBuffer[BUFFER_SIZE];
     int bytesReadFromSocket = 0;
     int bytesReadCurrentIteration = 0;
     int bufferSize;
 
-    ofstream offFile("out.txt");
-
-    bytesReadFromSocket = read(socket, fileSizeBuffer, sizeof(uint16_t));
-    if (bytesReadFromSocket == -1) {
-        cout << "erro na leitura do size" << endl;
-    }
-    payloadSize = *(int *)fileSizeBuffer;
-    bytesReadFromSocket = write(socket, fileSizeBuffer, sizeof(uint16_t));
-    if (bytesReadFromSocket == -1) {
-        cout << "erro no ack do size" << endl;
-    }
-
-    char payload[payloadSize];
-
-    bytesReadFromSocket = 0;
-
     do {
-        bufferSize = determineCorrectSizeToBeRead(payloadSize, bytesReadFromSocket);
+        bufferSize = determineCorrectSizeToBeRead(size, bytesReadFromSocket);
 
-        bytesReadCurrentIteration = read(socket, fileBuffer, bufferSize);
+        bytesReadCurrentIteration = read(socketId, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
             cout << "Error reading current buffer in socket - should retry this part" << endl;
         }
 
-        strcat(payload, fileBuffer);
+        memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
 
         bytesReadFromSocket += bufferSize;
-    } while(bytesReadFromSocket < payloadSize);
-
-    //altough payload is a char*, it should have a file_t content, which needs to be disassembled before writing to file
-
-    if ( fileBuffer) {
-        offFile.write(payload, payloadSize);
-        offFile.close();
-    }
-
+    } while(bytesReadFromSocket < size);
+    return bytesReadFromSocket;
 }
 
 int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocket) {
@@ -84,6 +104,15 @@ int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocke
         return BUFFER_SIZE;
     else
         return payloadSize - bytesReadFromSocket;
+}
+
+int Server::writeAckIntoSocket(void *socket) {
+    int socketId = *(int *) socket;
+    int bytesWritenIntoSocket = write(socketId, "ack", 3);
+    if (bytesWritenIntoSocket == -1) {
+        cout << "writeAckIntoSocket: failed to write ack" << endl;
+    }
+    return bytesWritenIntoSocket;
 }
 
 void* Server::serverNotifyThreadFunction(void *arg) {
@@ -99,12 +128,11 @@ void *Server::mediatorThread(void *arg) {
     connection_t connection;
     pthread_t thread;
     int socket = *(int *) arg;
-    int ack;
+    readLargePayloadFromSocket(arg, (char*)&connection, sizeof(struct connection));
+    //writeAckIntoSocket(arg);
 
-    ack = read(socket, &connection, sizeof(struct connection));
-    if(ack == -1) {
-        cout << "erro no read do connection type" << endl;
-    }
+    // checar se o usuario esta conectado
+    // ack = read(socket, &connection, sizeof(struct connection));
 
     // check initial configuration
     //char username = connection.username;
@@ -116,46 +144,35 @@ void *Server::mediatorThread(void *arg) {
     auto insert_user_result = insert_user(user);
 
     if ( insert_user_result == ERROR ) {
-        ack = write(socket,"nack1", 5);
-        if(ack == -1) {
-            cout << "erro no write nack1 no connection type" << endl;
-        }
+        write(socket,"nack1", 5);
+
         // TERMINAR A THREAD AQUI
     }
     else if( insert_user_result == MAX_USERS_REACHED) {
-        ack = write(socket,"nack2", 5);
-        if(ack == -1) {
-            cout << "erro no write nack2 no connection type" << endl;
-        }
+        write(socket,"nack2", 5);
+
         // TERMINAR A THREAD AQUI
     }
     else if( insert_user_result == USER_ALREADY_CONNECTED) {
 
         auto insert_device_result = insert_device(user, device_id);
         if( insert_device_result == MAX_DEVICES_REACHED ) {
-            ack = write(socket,"nack3", 5);
-            if(ack == -1) {
-                cout << "erro no write nack3 no connection type" << endl;
-            }
+            write(socket,"nack3", 5);
+
             // TERMINAR A THREAD AQUI
         }
         else if ( insert_device_result == DEVICE_ALREADY_CONNECTED) {
 
             // VER QUAL EH O T E COLOCAR NO SOCKET DO DEVICE CORRETO
 
-            ack = write(socket,"nack4", 5);
-            if(ack == -1) {
-                cout << "erro no write nack4 no connection type" << endl;
-            }
+            write(socket,"nack4", 5);
 
             // VERIFICAR SE O SOCKET REFERENTE AO TIPO DE CONEXAO ESTA CONECTADO. SE SIM, TERMINAR EXECUCAO
             // SE NAO, INSERIR O SOCKET NA ESTRUTURA DO USUARIO, NO DEVICE CORRESPONDENTE
         }
         else if (insert_device_result == SUCCESS) {
-            ack = write(socket,"ack", 3);
-            if(ack == -1) {
-                cout << "erro no write ack no connection type" << endl;
-            }
+            write(socket,"ack", 3);
+
             // THREAD SEGUE EXECUCAO
         }
 
@@ -163,39 +180,38 @@ void *Server::mediatorThread(void *arg) {
     else if( insert_user_result == SUCCESS ) {
         auto insert_device_result = insert_device(user, device_id);
         if( insert_device_result == ERROR ) {
-            ack = write(socket,"nack5", 5);
-            if(ack == -1) {
-                cout << "erro no write nack3 no connection type" << endl;
-            }
+            write(socket,"nack5", 5);
+
             // REMOVE USER
             // TERMINAR A THREAD AQUI
         }
         else if (insert_user_result == SUCCESS) {
-            ack = write(socket, "ack", 3);
-            if(ack == -1) {
-                cout << "erro no write nack3 no connection type" << endl;
-            }
+            write(socket, "ack", 3);
+
             // THREAD SEGUE EXECUCAO
         }
     }
 
 
-    if(connection.type == T1) {
-        // inserir socket1 na estrutura de device do usuario
-        pthread_create(&thread, NULL, &Server::terminalThreadFunction, arg);
+    if (connection.packetType == CONN) {
+        if(connection.socketType== T1) {
+            // inserir socket1 na estrutura de device do usuario
+            pthread_create(&thread, NULL, &Server::terminalThreadFunction, arg);
+        }
 
+        if(connection.socketType== T2) {
+            // inserir socket2 na estrutura de device do usuario
+            pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
+        }
+
+        if(connection.socketType== T3) {
+            // inserir socket3 na estrutura de device do usuario
+            pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
+        }
+    } else {
+        cout << "Expected CONN packet in mediator and received something else" << endl;
+        pthread_exit(arg);
     }
-
-    if(connection.type == T2) {
-        // inserir socket2 na estrutura de device do usuario
-        pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
-    }
-
-    if(connection.type == T3) {
-        // inserir socket3 na estrutura de device do usuario
-        pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
-    }
-
 }
 
 int Server::run() {
@@ -212,74 +228,7 @@ int Server::run() {
     }
 }
 
-int Server::handle_type(int s)
-{
-    connection_t c;
 
-    //char buffer[7];
-    //bzero(buffer, 7);
-    cout << "[Server] opa3" << endl;
-    n = read(s, &c, sizeof(struct connection));
-    //n = read(newsockfd, buffer, 7);
-    cout << "[Server] opa4" << endl;
-    //std::cout << buffer << std::endl;
-    cout << c.type << endl;
-    if (n < 0) {
-        cout << "[Server] ERROR reading from socket" << endl;
-        return 1;
-    }
-    n = write(s, "ack", 3);
-
-    if(c.type == T1)
-        cout << "[Server] Tipo 1" << endl;
-    else if(c.type == T2)
-        cout << "[Server] Tipo 2" << endl;
-    else
-        cout << "[Server] Tipo nao definido" << endl;
-
-    return 0;
-}
-
-int Server::receive_file() {
-
-    char message[100];  // isso nao vai ficar aqui
-    int file_size = 7;  // determinar o tamanho do arquivo de outra maneira
-    int bytes_received;
-    char buffer[BUFFER_SIZE];
-
-    if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
-        cout << "[Server] ERROR on accept" << endl;
-
-    bytes_received = 0;
-    while(bytes_received < file_size) {
-        bzero(buffer, BUFFER_SIZE);
-
-        /* read from the socket */
-        n = read(newsockfd, buffer, BUFFER_SIZE);
-        if (n < 0)
-            cout << "[Server] ERROR reading from socket" << endl;
-
-        memcpy(message+bytes_received, buffer, n);
-        bytes_received = bytes_received + n;
-        //std::cout << "Bytes received: " << bytes_received << std::endl;
-    }
-    n = write(newsockfd, "ack", 3);
-    if (n < 0)
-        cout << "[Server] ERROR writing to socket" << endl;
-
-    for (int i=0; i<bytes_received; i++){
-        cout << message[i];
-    }
-    cout << endl;
-
-    /*for (char c: message) {
-        std::cout << c;
-    }*/
-
-    //close(newsockfd);
-    //close(sockfd);
-    return bytes_received;
-}
 
 int Server::countUserConnections(string user) {
     int i, count = 0;

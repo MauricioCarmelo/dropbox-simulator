@@ -25,6 +25,10 @@
 #define MAX_DEVICES_REACHED 4
 #define DEVICE_ALREADY_CONNECTED 5
 
+#define CMD 1
+#define FILE 2
+#define CONN 3
+
 #define T1 1
 #define T2 2
 #define T3 3
@@ -71,6 +75,9 @@ private:
     pthread_t threads[50];
     //static User users[MAX_USERS];
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
+    static int readDataFromSocket(void *socket, char *buffer, size_t size);
+    static int readLargePayloadFromSocket(void *socket, char *buffer, size_t size);
+    static int writeAckIntoSocket(void *socket);
 
 public:
 
@@ -88,6 +95,7 @@ public:
     static void *terminalThreadFunction(void *arg);
     static void *iNotifyThreadFunction(void *arg);
     static void *serverNotifyThreadFunction(void *arg);
+    static void *uploadFileCommandThread(void *arg);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 
