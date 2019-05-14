@@ -35,20 +35,20 @@ void* Server::uploadFileCommandThread(void *arg) {
 
     char packetTypeBuffer[sizeof(uint64_t)];
     readDataFromSocket(arg, packetTypeBuffer, sizeof(uint64_t));
-    writeAckIntoSocket(arg);
+    writeAckIntoSocket(arg, "ack");
 
     char fileSizeBuffer[sizeof(uint64_t)];
     readDataFromSocket(arg, fileSizeBuffer, sizeof(uint64_t));
-    writeAckIntoSocket(arg);
+    writeAckIntoSocket(arg, "ack");
 
     char fileNameBuffer[100];
     readDataFromSocket(arg, fileNameBuffer, sizeof(fileNameBuffer));
-    writeAckIntoSocket(arg);
+    writeAckIntoSocket(arg, "ack");
 
     uint64_t payloadSize = *(int *)fileSizeBuffer;
     char payload[payloadSize];
     readLargePayloadFromSocket(arg, payload, payloadSize);
-    writeAckIntoSocket(arg);
+    writeAckIntoSocket(arg, "ack");
 
     //this block bellow is going inside the DAO
     char *prefix = (char*)malloc(200*sizeof(char));
@@ -63,9 +63,27 @@ void* Server::uploadFileCommandThread(void *arg) {
 void* Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
 
-    //going to expect CMD packet here, while this doesnt happen, this is the upload command
+    commandPacket command;
     pthread_t thread;
-    pthread_create(&thread, NULL, &Server::uploadFileCommandThread, arg);
+    int loopControl = 1;
+
+    while(loopControl) {
+        cout << "ready to receive command" << endl;
+        readLargePayloadFromSocket(arg, (char*)&command, sizeof(struct commandPacket));
+        writeAckIntoSocket(arg, "ack");
+
+        switch (command.command){
+            case UPLOAD:
+                uploadFileCommandThread(arg);
+                break;
+            case EXIT:
+                cout << "exit command received" << endl;
+                pthread_exit(arg);
+            default:
+                std::cout << "Command Invalid" << std::endl;
+                break;
+        }
+    }
 
 }
 
@@ -106,9 +124,9 @@ int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocke
         return payloadSize - bytesReadFromSocket;
 }
 
-int Server::writeAckIntoSocket(void *socket) {
+int Server::writeAckIntoSocket(void *socket, const char *message) {
     int socketId = *(int *) socket;
-    int bytesWritenIntoSocket = write(socketId, "ack", 3);
+    int bytesWritenIntoSocket = write(socketId, message, strlen(message));
     if (bytesWritenIntoSocket == -1) {
         cout << "writeAckIntoSocket: failed to write ack" << endl;
     }
@@ -128,8 +146,9 @@ void *Server::mediatorThread(void *arg) {
     connection_t connection;
     pthread_t thread;
     int socket = *(int *) arg;
+
     readLargePayloadFromSocket(arg, (char*)&connection, sizeof(struct connection));
-    //writeAckIntoSocket(arg);
+    writeAckIntoSocket(arg, "ack");
 
     // checar se o usuario esta conectado
     // ack = read(socket, &connection, sizeof(struct connection));
@@ -144,12 +163,14 @@ void *Server::mediatorThread(void *arg) {
     auto insert_user_result = insert_user(user);
 
     if ( insert_user_result == ERROR ) {
-        write(socket,"nack1", 5);
+        //write(arg,"nack1", 5);
+        writeAckIntoSocket(arg, "nack1");
 
         // TERMINAR A THREAD AQUI
     }
     else if( insert_user_result == MAX_USERS_REACHED) {
-        write(socket,"nack2", 5);
+        //write(arg,"nack2", 5);
+        writeAckIntoSocket(arg, "nack2");
 
         // TERMINAR A THREAD AQUI
     }
@@ -157,7 +178,8 @@ void *Server::mediatorThread(void *arg) {
 
         auto insert_device_result = insert_device(user, device_id);
         if( insert_device_result == MAX_DEVICES_REACHED ) {
-            write(socket,"nack3", 5);
+            //write(arg,"nack3", 5);
+            writeAckIntoSocket(arg, "nack3");
 
             // TERMINAR A THREAD AQUI
         }
@@ -165,13 +187,15 @@ void *Server::mediatorThread(void *arg) {
 
             // VER QUAL EH O T E COLOCAR NO SOCKET DO DEVICE CORRETO
 
-            write(socket,"nack4", 5);
+            //write(arg,"nack4", 5);
+            writeAckIntoSocket(arg, "nack4");
 
             // VERIFICAR SE O SOCKET REFERENTE AO TIPO DE CONEXAO ESTA CONECTADO. SE SIM, TERMINAR EXECUCAO
             // SE NAO, INSERIR O SOCKET NA ESTRUTURA DO USUARIO, NO DEVICE CORRESPONDENTE
         }
         else if (insert_device_result == SUCCESS) {
-            write(socket,"ack", 3);
+            //write(arg,"ack", 3);
+            writeAckIntoSocket(arg, "ack");
 
             // THREAD SEGUE EXECUCAO
         }
@@ -180,13 +204,15 @@ void *Server::mediatorThread(void *arg) {
     else if( insert_user_result == SUCCESS ) {
         auto insert_device_result = insert_device(user, device_id);
         if( insert_device_result == ERROR ) {
-            write(socket,"nack5", 5);
+            //write(arg,"nack5", 5);
+            writeAckIntoSocket(arg, "nack5");
 
             // REMOVE USER
             // TERMINAR A THREAD AQUI
         }
         else if (insert_user_result == SUCCESS) {
-            write(socket, "ack", 3);
+            //write(arg, "ack", 3);
+            writeAckIntoSocket(arg, "ack");
 
             // THREAD SEGUE EXECUCAO
         }

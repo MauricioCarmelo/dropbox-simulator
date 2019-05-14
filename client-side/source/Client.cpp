@@ -56,8 +56,26 @@ int Client::establishConnectionType(connection_t connection)
     return 0;
 }
 
+int Client::sendExitCommand() {
+    commandPacket command;
+    command.packetType = CMD;
+    command.command = EXIT;
+
+    sendLargePayloadToSocket((char*)&command, sizeof(struct commandPacket));
+    waitForSocketAck();
+
+    return 0;
+}
+
 int Client::sendFile(char *filename, int size, char *fileContent)
 {
+    commandPacket command_packet;
+    command_packet.packetType = CMD;
+    command_packet.command = UPLOAD;
+
+    sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
+    waitForSocketAck();
+
     filePacket file_packet = prepareFilePacket(filename, size, fileContent);
     sendFilePacket(file_packet);
 

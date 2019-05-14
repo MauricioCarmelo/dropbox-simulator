@@ -174,6 +174,7 @@ void Instruction::get_sync_dir(){
     cout << "[Instruction] Get sync dir function called..." << endl;
 }
 
-void Instruction::exit(){
+void Instruction::exit(Client client){
     cout << "[Instruction] Exit function called..." << endl;
+    client.sendExitCommand();
 }

@@ -77,7 +77,7 @@ private:
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
     static int readDataFromSocket(void *socket, char *buffer, size_t size);
     static int readLargePayloadFromSocket(void *socket, char *buffer, size_t size);
-    static int writeAckIntoSocket(void *socket);
+    static int writeAckIntoSocket(void *socket, const char *message);
 
 public:
 

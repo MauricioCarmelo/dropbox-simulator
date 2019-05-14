@@ -23,6 +23,11 @@ typedef struct filePacket{
     char *payload;
 } filePacket;
 
+typedef struct commandPacket {
+    uint64_t packetType;
+    uint64_t command;
+} commandPacket;
+
 typedef struct connection{
     uint64_t packetType;
     uint64_t socketType;
@@ -49,6 +54,7 @@ public:
     int establishConnectionToHost();
     int sendFile(char *filename, int size, char *fileContent);
     int establishConnectionType(connection_t c);
+    int sendExitCommand();
     std::string name;
     bool isLogged;
 };

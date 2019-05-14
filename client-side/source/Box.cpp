@@ -33,18 +33,14 @@ int Box::open(char *host, int port) {
     int device = rand()%10;
 
     connection_t con;
-    con.type = T1;
+    con.packetType = CONN;
+    con.socketType = T1;
     strcpy(con.username, username);
     con.device = device;
 
     // open connection
     c1 = Client(host, port);
     c1.establishConnectionToHost();
-    connection_t con1;
-    con1.packetType = CONN;
-    con1.socketType = T1;
-    con1.username = username;
-    //c1.establishConnectionType(con1);
 
     if (c1.establishConnectionType(con) == -1 ){
         std::cout << "[Box] ABORTAR, nao foi possivel se conectar" << std::endl;
@@ -124,7 +120,7 @@ void* Box::th_func_monitor_console(Client client){
                 break;
 
             case EXIT:
-                instruction.exit();
+                instruction.exit(client);
                 break;
 
             case INVALID_COMMAND:

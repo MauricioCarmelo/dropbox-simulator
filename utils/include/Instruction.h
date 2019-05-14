@@ -43,7 +43,7 @@ public:
     void list_server();
     void list_client();
     void get_sync_dir();
-    void exit();
+    void exit(Client client);
 };
 
 #endif //DROPBOX_INSTRUCTION_H
