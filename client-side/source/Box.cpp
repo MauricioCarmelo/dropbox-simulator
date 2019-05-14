@@ -18,52 +18,54 @@ void Box::set_username(char *name) {
 
 int Box::open(char *host, int port) {
 
-    //thread th_console(th_func_monitor_console, c1);
-    //thread th_inotify(th_func_inotify);
-
-    //client = Client(host, port);
-    //client.establishConnectionToHost();
-    //createSyncDir();
     srand(time(0));
 
-    // test
-    //char frase[] = "frase1";
-    //client.send(frase, 7);
-    //int username = rand()%10;
-    int device = rand()%10+1;
+    device = rand()%10+1;
 
-    connection_t con;
-    con.packetType = CONN;
-    con.socketType = T1;
-    strcpy(con.username, username);
-    con.device = device;
+    connection_t con1, con2, con3;
 
-    // open connection
+    con1.packetType = CONN;
+    con2.packetType = CONN;
+    con3.packetType = CONN;
+
+    con1.socketType = T1;
+    con2.socketType = T2;
+    con3.socketType = T3;
+
+    strcpy(con1.username, username);
+    strcpy(con2.username, username);
+    strcpy(con3.username, username);
+
+    con1.device = device;
+    con2.device = device;
+    con3.device = device;
+
     c1 = Client(host, port);
-    c1.establishConnectionToHost();
+    c1.establishConnectionToHost();     // open connection
 
-    if (c1.establishConnectionType(con) == -1 ){
-        std::cout << "[Box] ABORTAR, nao foi possivel se conectar" << std::endl;
+    if (c1.establishConnectionType(con1) == -1 ){
+        std::cout << "[Box] ABORTAR, nao foi possivel conectar client 1" << std::endl;
         return 0;
     }
 
-    /*
-    // open connection 2
     c2 = Client(host, port);
-    c2.establishConnectionToHost();
-    connection_t con2;
-    con2.type = T2;
-    con2.username = username;
-    c2.establishConnectionType(con2);
-     */
+    c2.establishConnectionToHost();     // open connection
+
+    if (c2.establishConnectionType(con2) == -1 ) {
+        std::cout << "[Box] ABORTAR, nao foi possivel conectar client 2" << std::endl;
+    }
+
+    c3 = Client(host, port);
+    c3.establishConnectionToHost();     // open connection
+
+    if (c3.establishConnectionType(con3) == -1 ) {
+        std::cout << "[Box] ABORTAR, nao foi possivel conectar client 2" << std::endl;
+    }
+
 
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify);
-
-    /*while(!exit_command_typed) {
-        c1.establishConnectionType(con1);
-        c2.establishConnectionType(con2);
-    }*/
+    thread th_inotify(th_func_inotify, c2);
+    // criar a terceita thread aqui
 
     th_console.join();
     th_inotify.join();
@@ -135,7 +137,7 @@ void* Box::th_func_monitor_console(Client client){
     cout << " [Box] Thread monitoring console finished properly" << endl;
 }
 
-void* Box::th_func_inotify(){
+void* Box::th_func_inotify(Client client){
     cout << "[Box] Inotify thread" << endl;
 
     const char* folder_path = SYNC_DIR;
@@ -191,6 +193,8 @@ void* Box::th_func_inotify(){
 
                     if(event->mask & IN_CREATE){
                         cout << "[Box] Directory or folder " << event->name << " was created" << endl;
+                        // abrir arquivo
+                        // chamar client.send_file
                     }
                     if(event->mask & IN_MODIFY){
                         cout << "[Box] Directory or folder " << event->name << " was modified" << endl;

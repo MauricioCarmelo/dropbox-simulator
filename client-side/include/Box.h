@@ -16,20 +16,20 @@ class Box {
 private:
     Client client;
     SystemDAO sda;
-    Client c1, c2;
+    Client c1, c2, c3;
     static Instruction instruction;
-
 public:
     Box();
     ~Box() {};
-    char username[USERNAME_SIZE];
+    static char username[USERNAME_SIZE];
+    static int device;
     char* get_username();
     void set_username(char *name);
     int open(char *host, int port);
     bool createSyncDir();
     int read_file(char* fileContent, std::string filePath);
     static void* th_func_monitor_console(Client client);
-    static void* th_func_inotify();
+    static void* th_func_inotify(Client client);
 };
 
 #endif //DROPBOX_BOX_H
