@@ -30,7 +30,7 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
     return 0;
 }
 
-void* Server::uploadFileCommandThread(void *arg) {
+void* Server::uploadFileCommand(void *arg) {
     cout << "Upload File Thread" << endl;
 
     char packetTypeBuffer[sizeof(uint64_t)];
@@ -60,11 +60,22 @@ void* Server::uploadFileCommandThread(void *arg) {
     cout << "copiei o arquivo no path:" << prefix << endl;
 }
 
+void* Server::downloadFileCommand(void *arg) {
+
+}
+
+void* Server::deleteFileCommand(void *arg) {
+
+}
+
+void* Server::listServerCommand(void *arg) {
+
+}
+
 void* Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
 
     commandPacket command;
-    pthread_t thread;
     int loopControl = 1;
 
     while(loopControl) {
@@ -74,10 +85,18 @@ void* Server::terminalThreadFunction(void *arg) {
 
         switch (command.command){
             case UPLOAD:
-                uploadFileCommandThread(arg);
+                uploadFileCommand(arg);
+                break;
+            case DOWNLOAD:
+                downloadFileCommand(arg);
+                break;
+            case DELETE:
+                deleteFileCommand(arg);
+                break;
+            case LIST_SERVER:
+                listServerCommand(arg);
                 break;
             case EXIT:
-                cout << "exit command received" << endl;
                 pthread_exit(arg);
             default:
                 std::cout << "Command Invalid" << std::endl;
@@ -148,7 +167,6 @@ void *Server::mediatorThread(void *arg) {
     int socket = *(int *) arg;
 
     readLargePayloadFromSocket(arg, (char*)&connection, sizeof(struct connection));
-    writeAckIntoSocket(arg, "ack");
 
     // checar se o usuario esta conectado
     // ack = read(socket, &connection, sizeof(struct connection));
@@ -166,12 +184,14 @@ void *Server::mediatorThread(void *arg) {
         //write(arg,"nack1", 5);
         writeAckIntoSocket(arg, "nack1");
 
+        pthread_exit(arg);
         // TERMINAR A THREAD AQUI
     }
     else if( insert_user_result == MAX_USERS_REACHED) {
         //write(arg,"nack2", 5);
         writeAckIntoSocket(arg, "nack2");
 
+        pthread_exit(arg);
         // TERMINAR A THREAD AQUI
     }
     else if( insert_user_result == USER_ALREADY_CONNECTED) {
@@ -182,6 +202,7 @@ void *Server::mediatorThread(void *arg) {
             writeAckIntoSocket(arg, "nack3");
 
             // TERMINAR A THREAD AQUI
+            pthread_exit(arg);
         }
         else if ( insert_device_result == DEVICE_ALREADY_CONNECTED) {
 
@@ -209,6 +230,7 @@ void *Server::mediatorThread(void *arg) {
 
             // REMOVE USER
             // TERMINAR A THREAD AQUI
+            pthread_exit(arg);
         }
         else if (insert_user_result == SUCCESS) {
             //write(arg, "ack", 3);
@@ -337,7 +359,7 @@ int is_device_connected(std::string name)
     }
 
     for (auto &device : user->devices) {
-        if (device.id != -1)
+        if (device.id != 0)
             return true;
     }
     return false;
@@ -387,8 +409,14 @@ Device *get_device(int device_id, std::string name)
             std::cout << "user not found" << std::endl;
             return nullptr;
         }
+        for (auto &device : user->devices) {
+            if (device.id == device_id) {
+                return &device;
+            }
+        }
+        return nullptr;
     }
-    else  {                         // search device in the whole structure
+    /*else  {                         // search device in the whole structure
         for (auto &user : users) {
             for (auto &device : user.devices) {
                 if (device.id == device_id)
@@ -396,7 +424,7 @@ Device *get_device(int device_id, std::string name)
             }
         }
         return nullptr;
-    }
+    }*/
 }
 
 int number_of_devices(std::string name) {
@@ -409,7 +437,7 @@ int number_of_devices(std::string name) {
     }
 
     for (auto &device : user->devices) {
-        if (device.id != -1)
+        if (device.id != 0)
             n++;
     }
     return n;
@@ -441,7 +469,7 @@ Device* get_available_device(std::string name)
     }
 
     for (auto &device : user->devices) {
-        if (device.id == -1) {
+        if (device.id == 0) {
             return &device;
         }
     }

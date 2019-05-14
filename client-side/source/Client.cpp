@@ -40,7 +40,7 @@ int Client::establishConnectionType(connection_t connection)
     read(sockfd, response, 100);
 
     if (strcmp(response, "ack") == 0)
-        return -1;
+        return 0;
     else if (strcmp(response, "nack1") == 0) // not possible to insert user
         return -1;
     else if (strcmp(response, "nack2") == 0) // max number of users reached

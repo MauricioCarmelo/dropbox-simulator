@@ -30,7 +30,7 @@ int Box::open(char *host, int port) {
     //char frase[] = "frase1";
     //client.send(frase, 7);
     //int username = rand()%10;
-    int device = rand()%10;
+    int device = rand()%10+1;
 
     connection_t con;
     con.packetType = CONN;

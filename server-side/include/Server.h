@@ -95,7 +95,10 @@ public:
     static void *terminalThreadFunction(void *arg);
     static void *iNotifyThreadFunction(void *arg);
     static void *serverNotifyThreadFunction(void *arg);
-    static void *uploadFileCommandThread(void *arg);
+    static void *uploadFileCommand(void *arg);
+    static void *deleteFileCommand(void *arg);
+    static void *downloadFileCommand(void *arg);
+    static void *listServerCommand(void *arg);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 
