@@ -92,7 +92,7 @@ void Instruction::upload_file(Client client){
 
         if(file_read){
             cout << "[Instruction] Whole file read successfully, " << length << " bytes read" << endl;
-            cout << "File content: " << fileContent << endl;
+            //cout << "File content: " << fileContent << endl;
 
             client.sendFile(filename, length, fileContent);
         }

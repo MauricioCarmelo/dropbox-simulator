@@ -29,6 +29,12 @@ int main(int argc, char *argv[]) {
 
     Box box;
     box.set_username(username);         // this is required
+    char userFolder[FOLDER_SIZE];
+    strcpy(userFolder, "./");
+    strcat(userFolder, SYNC_DIR);
+    strcat(userFolder, "_");
+    strcat(userFolder, username);
+    box.setUserFolder(userFolder);
     box.open(host, port);
     /*th_monitor_console.join();
     th_inotify.join();*/

@@ -5,7 +5,8 @@
 #ifndef DROPBOX_SERVER_H
 #define DROPBOX_SERVER_H
 
-#include "../../client-side/include/File.h"
+#include "../../utils/include/File.h"
+#include "../../utils/include/FileManager.h"
 #include "../../client-side/include/Client.h"
 #include "../../utils/include/masterInclude.h"
 #include <string>
@@ -33,6 +34,8 @@
 #define T2 2
 #define T3 3
 
+#define DATABASE_DIR "./database"
+
 struct Device {
     int id;
     int socket1;
@@ -43,6 +46,12 @@ struct Device {
 struct User {
     string name;
     Device devices[MAX_DEVICES];
+};
+
+struct UserCurrentSocket {
+    string userName;
+    int currentDevice;
+    int currentSocket; //test before trying conversion
 };
 
 int initiate_user_controller_structure();
@@ -67,6 +76,7 @@ private:
 
     // We will need arrays of sockets here in order to handle multiple users
 
+    FileManager fileManager;
     int sockfd, newsockfd, n;
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
@@ -87,7 +97,7 @@ public:
     int createSocket(char* host, int port);
     int receive_file();
     int countUserConnections(std::string user); //counts how many connections a user has
-    void createUserDirectory(const char *user);
+    static void createUserDirectory(const char *user);
     //int receive_file_stream(char *stream);
     int run();
     int handle_type(int s);

@@ -51,8 +51,12 @@ void* Server::uploadFileCommand(void *arg) {
     writeAckIntoSocket(arg, "ack");
 
     //this block bellow is going inside the DAO
+    char diretorio[50] = DATABASE_DIR;
+    strcat(diretorio,"/");
+    //strcat(diretorio, get_u);
+
     char *prefix = (char*)malloc(200*sizeof(char));
-    strcpy(prefix, "uploaded-");
+    strcpy(prefix, "./sync_dir/uploaded-");
     strcat(prefix, fileNameBuffer);
     ofstream offFile(prefix);
     offFile.write(payload, payloadSize);
@@ -240,6 +244,11 @@ void *Server::mediatorThread(void *arg) {
         }
     }
 
+    createUserDirectory(connection.username);
+    UserCurrentSocket userCurrentSocket;
+    userCurrentSocket.userName = connection.username;
+    userCurrentSocket.currentDevice = connection.device;
+    userCurrentSocket.currentSocket = socket; //test before conversion
 
     if (connection.packetType == CONN) {
         if(connection.socketType== T1) {
@@ -264,6 +273,7 @@ void *Server::mediatorThread(void *arg) {
 
 int Server::run() {
     int i = 0;
+    fileManager.createDir(DATABASE_DIR);
 
     while (i<50){
         if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
@@ -302,8 +312,9 @@ int Server::countUserConnections(string user) {
 void Server::createUserDirectory(const char *user) {
 
     struct stat st = {0};
-    char diretorio[50] = "sync_dir_";
-    strcat(diretorio,user);
+    char diretorio[50] = DATABASE_DIR;
+    strcat(diretorio,"/");
+    strcat(diretorio, user);
 
     if (stat(diretorio, &st) != 0) {
         mkdir(diretorio, 07777);

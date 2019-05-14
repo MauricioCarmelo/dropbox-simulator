@@ -8,6 +8,7 @@
 
 #define SYNC_DIR "sync_dir"
 #define USERNAME_SIZE 100
+#define FOLDER_SIZE 300
 
 using namespace std;
 class Instruction;
@@ -23,13 +24,15 @@ public:
     Box();
     ~Box() {};
     char username[USERNAME_SIZE];
+    char userFolderPath[FOLDER_SIZE];
     char* get_username();
     void set_username(char *name);
+    void setUserFolder(char *dir);
     int open(char *host, int port);
     bool createSyncDir();
     int read_file(char* fileContent, std::string filePath);
     static void* th_func_monitor_console(Client client);
-    static void* th_func_inotify();
+    static void* th_func_inotify(char *folder);
 };
 
 #endif //DROPBOX_BOX_H

@@ -16,6 +16,11 @@ void Box::set_username(char *name) {
     strcpy(username, name);
 }
 
+void Box::setUserFolder(char *dir) {
+    bzero(userFolderPath, FOLDER_SIZE);
+    strcpy(userFolderPath, dir);
+}
+
 int Box::open(char *host, int port) {
 
     //thread th_console(th_func_monitor_console, c1);
@@ -23,7 +28,7 @@ int Box::open(char *host, int port) {
 
     //client = Client(host, port);
     //client.establishConnectionToHost();
-    //createSyncDir();
+    createSyncDir();
     srand(time(0));
 
     // test
@@ -58,7 +63,7 @@ int Box::open(char *host, int port) {
      */
 
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify);
+    thread th_inotify(th_func_inotify, userFolderPath);
 
     /*while(!exit_command_typed) {
         c1.establishConnectionType(con1);
@@ -71,14 +76,12 @@ int Box::open(char *host, int port) {
     std::cout << "TERMINOU" << std::endl;
 }
 
-bool Box::createSyncDir( ) {
-    string dir_path;
-    dir_path = "./";
-    dir_path += SYNC_DIR;
+bool Box::createSyncDir() {
+    char dir_path[200];
+
     // convert string to array of char
-    char path[dir_path.length() + 1];
-    strcpy(path, dir_path.c_str());
-    if ( sda.createDir(path) )
+
+    if ( sda.createDir(userFolderPath) )
         return true;
     return false;
 }
@@ -135,10 +138,9 @@ void* Box::th_func_monitor_console(Client client){
     cout << " [Box] Thread monitoring console finished properly" << endl;
 }
 
-void* Box::th_func_inotify(){
+void* Box::th_func_inotify(char *folder){
     cout << "[Box] Inotify thread" << endl;
 
-    const char* folder_path = SYNC_DIR;
     char buffer[BUFFER_LENGHT];
 
     int inotify_descriptor = inotify_init();
@@ -149,13 +151,14 @@ void* Box::th_func_inotify(){
     }
     cout << "[Box] Inotify initialized" << endl;
 
-    int watcher_descriptor = inotify_add_watch(inotify_descriptor, folder_path, IN_CREATE | IN_MODIFY | IN_DELETE);
+
+    int watcher_descriptor = inotify_add_watch(inotify_descriptor, folder, IN_CREATE | IN_MODIFY | IN_DELETE);
     if(watcher_descriptor == -1){
         cout << "[Box] Error initiazing inotify watcher" << endl;
         //return;
         exit(-1);
     }
-    cout << "[Box] Inotify watcher added to folder " << folder_path << endl;
+    cout << "[Box] Inotify watcher added to folder " << folder << endl;
 
     // será usado para criar um timer
     pollfd poll_descriptor;
