@@ -70,15 +70,15 @@ int Box::open(char *host, int port) {
     c3.establishConnectionToHost();     // open connection
 
     if (c3.establishConnectionType(con3) == -1 ) {
-        std::cout << "[Box] ABORTAR, nao foi possivel conectar client 2" << std::endl;
+        std::cout << "[Box] ABORTAR, nao foi possivel conectar client 3" << std::endl;
     }
 
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify, c1); // c2 prints ABORT
+    //thread th_inotify(th_func_inotify, c1); // c2 prints ABORT
     // criar a terceita thread aqui
 
     th_console.join();
-    th_inotify.join();
+    //th_inotify.join();
 
     std::cout << "TERMINOU" << std::endl;
 }

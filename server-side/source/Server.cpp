@@ -258,12 +258,12 @@ void *Server::mediatorThread(void *arg) {
 
         if(connection.socketType== T2) {
             // inserir socket2 na estrutura de device do usuario
-            pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
+            pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
         }
 
         if(connection.socketType== T3) {
             // inserir socket3 na estrutura de device do usuario
-            pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
+            pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
         }
     } else {
         cout << "Expected CONN packet in mediator and received something else" << endl;
