@@ -88,7 +88,7 @@ filePacket Client::prepareFilePacket(char *filename, int size, char *fileContent
 
     file_packet.packetType = FILE;
     file_packet.fileSize = size;
-    memcpy(file_packet.fileName, filename, strlen(filename));
+    strcpy(file_packet.fileName, filename);
     file_packet.payload = (char*)malloc(size);
     memcpy(file_packet.payload, fileContent, size);
 
