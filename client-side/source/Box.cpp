@@ -91,8 +91,8 @@ void* Box::th_func_monitor_console(Client client){
     line[0] = 'a'; // avoid closing application when pressing enter only
     while(instruction.get_command_id() != EXIT)
     {
-        scanf("%[^\n]", line); if(strcmp(line, "\n") == 0) cout << "opa" << endl;
-        getchar(); if(strcmp(line, "\n") == 0) cout << "opa" << endl;
+        scanf("%[^\n]", line);
+        getchar();
 
         instruction.prepare(line);
 
