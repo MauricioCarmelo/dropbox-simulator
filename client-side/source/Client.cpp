@@ -173,3 +173,17 @@ int Client::deleteFile(char *filename)
     return 0;
 }
 
+int Client::list_server() {
+    commandPacket command_packet;
+    command_packet.packetType = CMD;
+    command_packet.command = LIST_SERVER;
+
+    cout << "[Client][List server]";
+    sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
+    waitForSocketAck();
+
+    cout << "[Client][List server] Ack received! ";
+
+    return 0;
+}
+

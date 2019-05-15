@@ -88,6 +88,26 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
 
 void* Server::listServerCommand(void *arg) {
 
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    string userName = userCurrentSocket->userName;
+
+    stringstream filepath;
+    filepath << "./database/" << userName;
+    string filepathstring = filepath.str();
+
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir (filepathstring.c_str())) != NULL) {
+        /* print all the files and directories within directory */
+        while ((ent = readdir (dir)) != NULL) {
+            cout << ent->d_name;
+        }
+        closedir (dir);
+    } else {
+        /* could not open directory */
+        cout << "problem"; //TODO send this data to client
+    }
+
 }
 
 void* Server::terminalThreadFunction(void *arg) {

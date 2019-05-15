@@ -119,7 +119,7 @@ void* Box::th_func_monitor_console(Client client){
                 break;
 
             case LIST_SERVER:
-                instruction.list_server();
+                instruction.list_server(client);
                 break;
 
             case LIST_CLIENT:

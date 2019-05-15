@@ -55,6 +55,7 @@ public:
     int establishConnectionToHost();
     int sendFile(char *filename, int size, char *fileContent);
     int deleteFile(char* filename);
+    int list_server();
     int establishConnectionType(connection_t c);
     int sendExitCommand();
     std::string name;

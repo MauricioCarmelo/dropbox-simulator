@@ -150,23 +150,13 @@ void Instruction::delete_file(Client client){
 
     client.deleteFile(filename);
 
-    /*
-    char* filepath = (char*)malloc(sizeof(PATH_TO_SYNC_DIR) + sizeof(path) + sizeof(filename));
-    strcpy(filepath, PATH_TO_SYNC_DIR);
-    strcat(filepath, path);
-    strcat(filepath, filename);
-
-    int remove_result = remove(filepath);
-    if(remove_result != 0)
-        perror("Error deleting file");
-    else
-        cout << "[Instruction] File " << filename << "deleted succesfully" << endl;
-
-    delete[] filepath; */
 }
 
-void Instruction::list_server(){
+void Instruction::list_server(Client client){
     cout << "[Instruction] List server function called..." << endl;
+
+    client.list_server();
+
 }
 
 void Instruction::list_client(){

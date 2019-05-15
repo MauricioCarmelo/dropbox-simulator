@@ -28,8 +28,8 @@
 #include <sys/stat.h>
 #include <sstream>
 
-using namespace std;
 
+using namespace std;
 
 
 #endif //DROPBOX_MASTERINCLUDE_H
