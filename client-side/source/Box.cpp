@@ -59,7 +59,7 @@ int Box::open(char *host, int port) {
         return 0;
     }
 
-    c2 = Client(host, port);
+    /*c2 = Client(host, port);
     c2.establishConnectionToHost();     // open connection
 
     if (c2.establishConnectionType(con2) == -1 ) {
@@ -71,7 +71,7 @@ int Box::open(char *host, int port) {
 
     if (c3.establishConnectionType(con3) == -1 ) {
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 3" << std::endl;
-    }
+    }*/
 
     thread th_console(th_func_monitor_console, c1);
     //thread th_inotify(th_func_inotify, c1); // c2 prints ABORT
