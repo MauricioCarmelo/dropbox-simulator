@@ -41,7 +41,7 @@ public:
     void print();
     void upload_file(Client client);
     void download_file(Client client);
-    void delete_file();
+    void delete_file(Client client);
     void list_server();
     void list_client();
     void get_sync_dir();

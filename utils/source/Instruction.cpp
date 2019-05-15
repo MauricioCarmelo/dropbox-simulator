@@ -88,7 +88,7 @@ void Instruction::upload_file(Client client){
 
     char* filepath = (char*)malloc(sizeof(path) + sizeof(filename));
     strcpy(filepath, path);
-    //strcat(filepath, filename);
+    strcat(filepath, filename);
 
     ifstream file_read(filepath, ifstream::binary);
 
@@ -145,9 +145,12 @@ void Instruction::download_file(Client client){
     cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
 }
 
-void Instruction::delete_file(){
+void Instruction::delete_file(Client client){
     cout << "[Instruction] Delete function called..." << endl;
 
+    client.deleteFile(filename);
+
+    /*
     char* filepath = (char*)malloc(sizeof(PATH_TO_SYNC_DIR) + sizeof(path) + sizeof(filename));
     strcpy(filepath, PATH_TO_SYNC_DIR);
     strcat(filepath, path);
@@ -159,7 +162,7 @@ void Instruction::delete_file(){
     else
         cout << "[Instruction] File " << filename << "deleted succesfully" << endl;
 
-    delete[] filepath;
+    delete[] filepath; */
 }
 
 void Instruction::list_server(){

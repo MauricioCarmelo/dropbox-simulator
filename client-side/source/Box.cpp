@@ -115,7 +115,7 @@ void* Box::th_func_monitor_console(Client client){
                 break;
 
             case DELETE:
-                instruction.delete_file();
+                instruction.delete_file(client);
                 break;
 
             case LIST_SERVER:

@@ -155,3 +155,21 @@ int Client::determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocke
         return totalSize - bytesWritenInSocket;
 }
 
+int Client::deleteFile(char *filename)
+{
+    commandPacket command_packet;
+    command_packet.packetType = CMD;
+    command_packet.command = DELETE;
+    strcpy(command_packet.additionalInfo, filename);
+
+
+    cout << "[Client][Delete] Sending packet for deletion: " << command_packet.additionalInfo << endl;
+
+    sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
+    waitForSocketAck();
+
+    cout << "[Client][Delete] Ack received! ";
+
+    return 0;
+}
+

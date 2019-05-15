@@ -26,6 +26,7 @@ typedef struct filePacket{
 typedef struct commandPacket {
     uint64_t packetType;
     uint64_t command;
+    char additionalInfo[100];
 } commandPacket;
 
 typedef struct connection{
@@ -53,6 +54,7 @@ public:
     Client(char *host, int port);
     int establishConnectionToHost();
     int sendFile(char *filename, int size, char *fileContent);
+    int deleteFile(char* filename);
     int establishConnectionType(connection_t c);
     int sendExitCommand();
     std::string name;

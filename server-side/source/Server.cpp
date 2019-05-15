@@ -68,7 +68,22 @@ void* Server::downloadFileCommand(void *arg) {
 
 }
 
-void* Server::deleteFileCommand(void *arg) {
+void* Server::deleteFileCommand(void *arg, commandPacket command) {
+
+    char* filepath = (char*)malloc(sizeof("./database/") + sizeof("gustavo") + sizeof(command.additionalInfo));
+    strcpy(filepath, "./database/");
+    strcat(filepath, "gustavo/");
+    strcat(filepath, command.additionalInfo);
+
+    int remove_result = remove(filepath);
+    if(remove_result != 0)
+        perror("Error deleting file");
+    else
+        cout << "[Instruction] File " << command.additionalInfo << "deleted succesfully" << endl;
+
+    delete[] filepath;
+
+    cout << "deltei o arquivo no path:" << filepath << endl;
 
 }
 
@@ -95,7 +110,7 @@ void* Server::terminalThreadFunction(void *arg) {
                 downloadFileCommand(arg);
                 break;
             case DELETE:
-                deleteFileCommand(arg);
+                deleteFileCommand(arg, command);
                 break;
             case LIST_SERVER:
                 listServerCommand(arg);

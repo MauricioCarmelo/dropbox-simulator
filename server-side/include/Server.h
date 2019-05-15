@@ -106,7 +106,7 @@ public:
     static void *iNotifyThreadFunction(void *arg);
     static void *serverNotifyThreadFunction(void *arg);
     static void *uploadFileCommand(void *arg);
-    static void *deleteFileCommand(void *arg);
+    static void *deleteFileCommand(void *arg, commandPacket commandPacket);
     static void *downloadFileCommand(void *arg);
     static void *listServerCommand(void *arg);
 /*
