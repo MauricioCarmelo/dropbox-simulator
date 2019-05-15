@@ -36,4 +36,6 @@ template <typename T> void alloc_unsigned_char_ptr_to_type_T(unsigned char*& arr
     array = (unsigned char*)malloc(sizeof(T));
 }
 
+void format_from_timespec_to_string(char *formatted_time, timespec ts);
+
 #endif //DROPBOX_UTILITY_H

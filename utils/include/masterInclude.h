@@ -25,6 +25,8 @@
 #include <iostream>
 #include <dirent.h>
 #include <sys/poll.h>
+#include <sys/stat.h>
+#include <sstream>
 
 using namespace std;
 
