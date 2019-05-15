@@ -135,6 +135,7 @@ void Instruction::download_file(Client client){
 
     client.downloadFile(filename);
 
+    /*
     // fileContent será recebido do servidor (por parâmetro?)
     // então essas linhas não serão necessárias
     char str[] = "[Instruction] esse é um exemplo de conteúdo do arquivo recebido do servidor.";
@@ -151,7 +152,7 @@ void Instruction::download_file(Client client){
     file.close();
 
     delete[] fileContent;
-    delete[] filepath;
+    delete[] filepath;*/
 
     cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
 }
