@@ -100,7 +100,26 @@ void* Server::listServerCommand(void *arg) {
     if ((dir = opendir (filepathstring.c_str())) != NULL) {
         /* print all the files and directories within directory */
         while ((ent = readdir (dir)) != NULL) {
-            cout << ent->d_name;
+            if(strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0){
+                struct stat file_status;
+                if(stat(filepathstring.c_str(), &file_status) == 0){
+                    timespec modification_time = file_status.st_mtim;
+                    timespec access_time = file_status.st_atim;
+                    timespec changed_time = file_status.st_ctim;
+                    char* formatted_time = (char*)malloc(32);
+
+                    cout << "File: " << ent->d_name << endl;
+
+                    format_from_timespec_to_string(formatted_time, modification_time);
+                    cout << "\tModification time: " << formatted_time << endl;
+
+                    format_from_timespec_to_string(formatted_time, access_time);
+                    cout << "\tAccess time: " << formatted_time << endl;
+
+                    format_from_timespec_to_string(formatted_time, changed_time);
+                    cout << "\tChange time: " << formatted_time << endl;
+                }
+            }
         }
         closedir (dir);
     } else {

@@ -179,11 +179,11 @@ int Client::list_server() {
     command_packet.packetType = CMD;
     command_packet.command = LIST_SERVER;
 
-    cout << "[Client][List server]";
+    cout << "[Client][List server]" << endl;
     sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
     waitForSocketAck();
 
-    cout << "[Client][List server] Ack received! ";
+    cout << "[Client][List server] Ack received! " << endl;
 
     return 0;
 }
