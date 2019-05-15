@@ -126,6 +126,42 @@ void Client::waitForSocketAck() {
     }
 }
 
+int Client::readDataFromSocket(char *buffer, size_t size) {
+    int bytesRead = read(sockfd, buffer, size);
+    if (bytesRead == -1) {
+        cout << "readDataFromSocket: Failed to receive data" << endl;
+    }
+}
+
+int Client::readLargePayloadFromSocket(char *buffer, size_t size) {
+    char smallerBuffer[BUFFER_SIZE];
+    int bytesReadFromSocket = 0;
+    int bytesReadCurrentIteration = 0;
+    int bufferSize;
+
+    do {
+        bufferSize = determineCorrectSizeToBeCopied(size, bytesReadFromSocket);
+
+        bytesReadCurrentIteration = read(sockfd, smallerBuffer, bufferSize);
+        if (bufferSize != bytesReadCurrentIteration) {
+            cout << "Error reading current buffer in socket - should retry this part" << endl;
+        }
+
+        memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
+
+        bytesReadFromSocket += bufferSize;
+    } while(bytesReadFromSocket < size);
+    return bytesReadFromSocket;
+}
+
+int Client::writeAckIntoSocket(const char *message) {
+    int bytesWritenIntoSocket = write(sockfd, message, strlen(message));
+    if (bytesWritenIntoSocket == -1) {
+        cout << "writeAckIntoSocket: failed to write ack" << endl;
+    }
+    return bytesWritenIntoSocket;
+}
+
 int Client::sendLargePayloadToSocket(char *data, size_t totalSize) {
     char buffer[BUFFER_SIZE];
     int bytesCopiedFromPayload = 0;
@@ -170,6 +206,40 @@ int Client::deleteFile(char *filename)
     waitForSocketAck();
 
     cout << "[Client][Delete] Ack received! ";
+
+    return 0;
+}
+
+int Client::downloadFile(char *filename) {
+    commandPacket command_packet;
+    command_packet.packetType = CMD;
+    command_packet.command = DOWNLOAD;
+    strcpy(command_packet.additionalInfo, filename);
+
+
+    cout << "[Client][Download] Sending packet to ask for file: " << command_packet.additionalInfo << endl;
+
+    sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
+    waitForSocketAck();
+
+    char fileSizeBuffer[sizeof(long)];
+    readDataFromSocket(fileSizeBuffer, sizeof(long));
+    writeAckIntoSocket("ack");
+
+    long payloadSize = *(long *)fileSizeBuffer;
+    char payload[payloadSize];
+    readLargePayloadFromSocket(payload, payloadSize);
+    writeAckIntoSocket("ack");
+
+    stringstream pathStream;
+    pathStream << "./" << filename;
+    string path = pathStream.str();
+
+    ofstream offFile(path);
+    offFile.write(payload, payloadSize);
+    offFile.close();
+
+    cout << "[Client][Download] File received! ";
 
     return 0;
 }

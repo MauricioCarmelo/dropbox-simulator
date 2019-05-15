@@ -48,6 +48,10 @@ private:
     int sendDataToSocket(void *data, size_t size);
     int sendLargePayloadToSocket(char *data, size_t totalSize);
     void waitForSocketAck();
+
+    int readDataFromSocket(char *buffer, size_t size);
+    int readLargePayloadFromSocket(char *buffer, size_t size);
+    int writeAckIntoSocket(const char *message);
 public:
     Client();
     ~Client() {};
@@ -56,6 +60,7 @@ public:
     int sendFile(char *filename, int size, char *fileContent);
     int deleteFile(char* filename);
     int list_server();
+    int downloadFile(char *filename);
     int establishConnectionType(connection_t c);
     int sendExitCommand();
     std::string name;

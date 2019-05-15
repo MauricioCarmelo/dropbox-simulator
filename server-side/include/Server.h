@@ -89,6 +89,10 @@ private:
     static int readLargePayloadFromSocket(int socketId, char *buffer, size_t size);
     static int writeAckIntoSocket(int socketId, const char *message);
 
+    static int sendDataToSocket(int socketId, void *data, size_t size);
+    static int sendLargePayloadToSocket(int socketId, char *data, size_t totalSize);
+    static void waitForSocketAck(int socketId);
+
 public:
 
     Server();
@@ -107,7 +111,7 @@ public:
     static void *serverNotifyThreadFunction(void *arg);
     static void *uploadFileCommand(void *arg);
     static void *deleteFileCommand(void *arg, commandPacket commandPacket);
-    static void *downloadFileCommand(void *arg);
+    static void *downloadFileCommand(void *arg, commandPacket commandPacket);
     static void *listServerCommand(void *arg);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client

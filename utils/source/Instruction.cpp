@@ -133,6 +133,8 @@ void Instruction::upload_file(Client client){
 void Instruction::download_file(Client client){
     cout << "Download function called..." << endl;
 
+    client.downloadFile(filename);
+
     // fileContent será recebido do servidor (por parâmetro?)
     // então essas linhas não serão necessárias
     char str[] = "[Instruction] esse é um exemplo de conteúdo do arquivo recebido do servidor.";

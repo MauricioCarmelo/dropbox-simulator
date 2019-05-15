@@ -64,7 +64,42 @@ void* Server::uploadFileCommand(void *arg) {
     cout << " [SERVER] Arquivo copiado no path:" << completePath << endl;
 }
 
-void* Server::downloadFileCommand(void *arg) {
+void* Server::downloadFileCommand(void *arg, commandPacket command) {
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    int socket = userCurrentSocket->currentSocket;
+    string user = userCurrentSocket->userName;
+
+    stringstream streamPath;
+    streamPath << DATABASE_DIR << "/" << user << "/" << command.additionalInfo;
+    string path = streamPath.str();
+
+    ifstream wantedFile(path, ifstream::binary);
+    if (wantedFile) {
+        wantedFile.seekg(0, wantedFile.end);
+        long length = wantedFile.tellg();
+        wantedFile.seekg(0, wantedFile.beg);
+
+        char* fileContent = (char*)malloc(length);
+
+        cout << "[Instruction] Reading " << streamPath.str() << endl;
+        wantedFile.read(fileContent, length);
+
+        if(fileContent){
+            cout << "[Instruction] Whole file read successfully, " << length << " bytes read" << endl;
+
+            sendDataToSocket(socket, &length, sizeof(long));
+            waitForSocketAck(socket);
+
+            sendLargePayloadToSocket(socket, fileContent, length);
+            waitForSocketAck(socket);
+        }
+        else
+            cout << "[Instruction] Error: couldn't read whole file" << endl;
+
+        wantedFile.close();
+
+        delete[] fileContent;
+    }
 
 }
 
@@ -148,7 +183,7 @@ void* Server::terminalThreadFunction(void *arg) {
                 uploadFileCommand(arg);
                 break;
             case DOWNLOAD:
-                downloadFileCommand(arg);
+                downloadFileCommand(arg, command);
                 break;
             case DELETE:
                 deleteFileCommand(arg, command);
@@ -207,6 +242,45 @@ int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocke
         return BUFFER_SIZE;
     else
         return payloadSize - bytesReadFromSocket;
+}
+
+int Server::sendDataToSocket(int socketId, void *data, size_t size) {
+    int bytesSocketReceived = write(socketId, data, size);
+    if (bytesSocketReceived != size) {
+        cout << "sendDataToSocket: Failed to send data to socket" << endl;
+    }
+    return bytesSocketReceived;
+}
+
+int Server::sendLargePayloadToSocket(int socketId, char *data, size_t totalSize) {
+    char buffer[BUFFER_SIZE];
+    int bytesCopiedFromPayload = 0;
+    int bytesWritenInSocket = 0;
+    int bytesWritenInCurrentIteration = 0;
+    int bufferSize;
+    do {
+        bufferSize = determineCorrectSizeToBeRead(totalSize, bytesWritenInSocket);
+
+        memcpy(buffer, data + bytesCopiedFromPayload, bufferSize);
+        bytesCopiedFromPayload += bufferSize;
+
+        bytesWritenInCurrentIteration = sendDataToSocket(socketId, buffer, bufferSize);
+        if (bufferSize != bytesWritenInCurrentIteration) {
+            cout << "Client.sendFilePacket: Error writing current buffer in socket" << endl;
+        }
+
+        bytesWritenInSocket += bytesWritenInCurrentIteration;
+
+    } while (bytesWritenInSocket < totalSize);
+    return bytesWritenInSocket;
+}
+
+void Server::waitForSocketAck(int socketId) {
+    char ackBuffer[sizeof(uint64_t)];
+    int ackReturn = read(socketId, ackBuffer, sizeof(uint64_t));
+    if (ackReturn == -1) {
+        cout << "waitForSocketAck: Failed to receive ack" << endl;
+    }
 }
 
 
