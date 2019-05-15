@@ -1,6 +1,9 @@
 #include "../include/Instruction.h"
 
 void Instruction::prepare(char *line) {
+    if(strcmp(line, "\n") == 0){
+        cout << "You typed enter only";
+    }
     auto cmd_name = strtok(line, " ");
     strcpy(command_name, cmd_name);
     set_command_id();
@@ -64,7 +67,7 @@ void Instruction::set_command_id() {
 
 void Instruction::print(){
     if(command_id != INVALID_COMMAND){
-        cout << "[Instruction] Você digitou o comando " << command_name << "[Instruction] cujo ID eh " << command_id;
+        cout << "[Instruction] Você digitou o comando " << command_name << " cujo ID eh " << command_id;
         if(strcmp(filename, "") != 0)
             cout << " com o arquivo " << path << filename << endl;
         else
@@ -72,11 +75,20 @@ void Instruction::print(){
     }
 }
 
+void Instruction::set_filename(char filename[]){
+    strcpy(this->filename, filename);
+}
+
+void Instruction::set_path(char path[]) {
+    strcpy(this->path, path);
+}
+
 void Instruction::upload_file(Client client){
     cout << "[Instruction] Upload function called..." << endl;
 
     char* filepath = (char*)malloc(sizeof(path) + sizeof(filename));
     strcpy(filepath, path);
+    strcat(filepath, filename);
 
     ifstream file_read(filepath, ifstream::binary);
 
@@ -87,7 +99,7 @@ void Instruction::upload_file(Client client){
 
         char* fileContent = (char*)malloc(length);
 
-        cout << "[Instruction] Reading " << path << filename << endl;
+        cout << "[Instruction] Reading " << filepath << endl;
         file_read.read(fileContent, length);
 
         if(file_read){
@@ -104,7 +116,7 @@ void Instruction::upload_file(Client client){
         delete[] fileContent;
     }
     else
-        cout << "[Instruction] Error: couldn't find file " << path << filename << endl;
+        cout << "[Instruction] Error: couldn't find file " << filepath << endl;
 
     delete[] filepath;
 }
@@ -164,8 +176,34 @@ void Instruction::list_client(){
         perror("Error opening sync_dir");
     else{
         while((ent = readdir(dir)) != NULL){
-            if(strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) // avoid printing "." and ".."
-                cout << ent->d_name << endl;
+            if(strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0){ // avoid printing "." and ".."
+                stringstream ss;
+                ss << PATH_TO_SYNC_DIR << ent->d_name;
+                string filepath_and_name = ss.str();
+                struct stat file_status;
+
+                if(stat(filepath_and_name.c_str(), &file_status) == 0){
+                    timespec modification_time = file_status.st_mtim;
+                    timespec access_time = file_status.st_atim;
+                    timespec changed_time = file_status.st_ctim;
+                    char* formatted_time = (char*)malloc(32);
+
+                    cout << "File: " << ent->d_name << endl;
+
+                    format_from_timespec_to_string(formatted_time, modification_time);
+                    cout << "\tModification time: " << formatted_time << endl;
+
+                    format_from_timespec_to_string(formatted_time, access_time);
+                    cout << "\tAccess time: " << formatted_time << endl;
+
+                    format_from_timespec_to_string(formatted_time, changed_time);
+                    cout << "\tChange time: " << formatted_time << endl;
+
+                    //cout << ent->d_name << ", " << ctime(&time_without_millisec); // alternative (prints Tue May 14 14:12:08 2019)
+
+                    delete[] formatted_time;
+                }
+            }
         }
     }
 }

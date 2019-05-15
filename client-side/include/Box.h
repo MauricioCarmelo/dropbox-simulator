@@ -21,8 +21,8 @@ private:
 public:
     Box();
     ~Box() {};
-    static char username[USERNAME_SIZE];
-    static int device;
+    char username[USERNAME_SIZE];
+    int device;
     char* get_username();
     void set_username(char *name);
     int open(char *host, int port);

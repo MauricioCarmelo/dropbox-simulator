@@ -36,6 +36,8 @@ public:
     int get_command_id();
     void prepare(char* line);
     void set_command_id();
+    void set_filename(char filename[]);
+    void set_path(char path[]);
     void print();
     void upload_file(Client client);
     void download_file(Client client);

@@ -62,9 +62,8 @@ int Box::open(char *host, int port) {
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 2" << std::endl;
     }
 
-
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify, c2);
+    thread th_inotify(th_func_inotify, c1); // c2 prints ABORT
     // criar a terceita thread aqui
 
     th_console.join();
@@ -89,10 +88,11 @@ void* Box::th_func_monitor_console(Client client){
     cout << "[Box] Monitor console thread" << endl;
 
     char line[100];
+    line[0] = 'a'; // avoid closing application when pressing enter only
     while(instruction.get_command_id() != EXIT)
     {
-        scanf("%[^\n]", line);
-        getchar();
+        scanf("%[^\n]", line); if(strcmp(line, "\n") == 0) cout << "opa" << endl;
+        getchar(); if(strcmp(line, "\n") == 0) cout << "opa" << endl;
 
         instruction.prepare(line);
 
@@ -126,7 +126,7 @@ void* Box::th_func_monitor_console(Client client){
                 break;
 
             case INVALID_COMMAND:
-                cout << " [Box] Invalid command!" << endl;
+                cout << "[Box] Invalid command!" << endl;
                 break;
 
             default: break;
@@ -134,7 +134,7 @@ void* Box::th_func_monitor_console(Client client){
     }
 
     exit_command_typed = true;
-    cout << " [Box] Thread monitoring console finished properly" << endl;
+    cout << "[Box] Thread monitoring console finished properly" << endl;
 }
 
 void* Box::th_func_inotify(Client client){
@@ -145,13 +145,13 @@ void* Box::th_func_inotify(Client client){
 
     int inotify_descriptor = inotify_init();
     if(inotify_descriptor < 0){
-        cout << " [Box] Error initializing inotify" << endl;
+        cout << "[Box] Error initializing inotify" << endl;
         //return;
         exit(-1);
     }
     cout << "[Box] Inotify initialized" << endl;
 
-    int watcher_descriptor = inotify_add_watch(inotify_descriptor, folder_path, IN_CREATE | IN_MODIFY | IN_DELETE);
+    int watcher_descriptor = inotify_add_watch(inotify_descriptor, folder_path, IN_DELETE | IN_CLOSE_WRITE | IN_MOVED_FROM | IN_MOVED_TO);
     if(watcher_descriptor == -1){
         cout << "[Box] Error initiazing inotify watcher" << endl;
         //return;
@@ -190,17 +190,26 @@ void* Box::th_func_inotify(Client client){
             while(i < total_read){
                 struct inotify_event* event = (struct inotify_event*)&buffer[i];
                 if(event->len){
-
-                    if(event->mask & IN_CREATE){
-                        cout << "[Box] Directory or folder " << event->name << " was created" << endl;
-                        // abrir arquivo
-                        // chamar client.send_file
+                    if(event->mask & IN_DELETE){ // dispara apenas usando rm -f nome_arquivo.ext no console
+                        cout << "[Box] Directory or file " << event->name << " was deleted" << endl;
                     }
-                    if(event->mask & IN_MODIFY){
-                        cout << "[Box] Directory or folder " << event->name << " was modified" << endl;
+                    else if(event->mask & IN_CLOSE_WRITE){ // dispara na criação (console) e modificação do arquivo (duas vezes na modificação)
+                        cout << "[Box] Directory or file " << event->name << " was created/modified" << endl;
+                        instruction.set_filename(event->name);
+                        instruction.set_path("sync_dir/");
+                        instruction.upload_file(client);
                     }
-                    if(event->mask & IN_DELETE){
-                        cout << "[Box] Directory or folder " << event->name << " was deleted" << endl;
+                    else if(event->mask & IN_MOVED_FROM){ // dispara ao deletar/arrastar arquivo para fora da pasta (e ao modificar, porém com nome .goutputstream-XXXXXX)
+                        string event_name = event->name;
+                        if(event_name.find(".goutputstream-") != string::npos); // avoid printing this event name
+                        else
+                            cout << "[Box] Directory or file " << event->name << " was deleted/moved out" << endl;
+                    }
+                    else if(event->mask & IN_MOVED_TO){ // dispara ao arrastar arquivo para dentro da pasta e na criação (console)
+                        cout << "[Box] Directory of file " << event->name << " was created/moved in" << endl;
+                        /*instruction.set_filename(event->name);
+                        instruction.set_path("sync_dir/");
+                        instruction.upload_file(client);*/
                     }
 
                     i += MONITOR_SINGLE_EVENT_SIZE + event->len;
