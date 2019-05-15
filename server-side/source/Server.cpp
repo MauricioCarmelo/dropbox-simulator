@@ -70,20 +70,19 @@ void* Server::downloadFileCommand(void *arg) {
 
 void* Server::deleteFileCommand(void *arg, commandPacket command) {
 
-    char* filepath = (char*)malloc(sizeof("./database/") + sizeof("gustavo") + sizeof(command.additionalInfo));
-    strcpy(filepath, "./database/");
-    strcat(filepath, "gustavo/");
-    strcat(filepath, command.additionalInfo);
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    string userName = userCurrentSocket->userName;
 
-    int remove_result = remove(filepath);
+    stringstream filepath;
+    filepath << "./database/" << userName << "/" << command.additionalInfo;
+
+    string filepathstring = filepath.str();
+
+    int remove_result = remove(filepathstring.c_str());
     if(remove_result != 0)
         perror("Error deleting file");
     else
         cout << "[Instruction] File " << command.additionalInfo << "deleted succesfully" << endl;
-
-    delete[] filepath;
-
-    cout << "deltei o arquivo no path:" << filepath << endl;
 
 }
 
