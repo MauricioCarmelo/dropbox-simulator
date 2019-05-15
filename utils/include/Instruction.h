@@ -39,6 +39,7 @@ public:
     void set_filename(char filename[]);
     void set_path(char path[]);
     void print();
+    void reset();
     void upload_file(Client client);
     void download_file(Client client);
     void delete_file(Client client);
