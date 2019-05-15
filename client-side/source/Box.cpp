@@ -103,6 +103,7 @@ void* Box::th_func_monitor_console(Client client){
         scanf("%[^\n]", line);
         getchar();
 
+        instruction.reset();
         instruction.prepare(line);
 
         switch(instruction.get_command_id()){

@@ -83,6 +83,15 @@ void Instruction::set_path(char path[]) {
     strcpy(this->path, path);
 }
 
+void Instruction::reset(){
+    command_id = INVALID_COMMAND;
+    for(int i = 0; i < 50; i ++){
+        filename[i] = '\0';
+        command_name[i] = '\0';
+        path[i] = '\0';
+    }
+}
+
 void Instruction::upload_file(Client client){
     cout << "[Instruction] Upload function called..." << endl;
 
