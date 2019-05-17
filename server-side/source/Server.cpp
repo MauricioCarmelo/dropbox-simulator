@@ -46,6 +46,8 @@ void* Server::uploadFileCommand(void *arg) {
     writeAckIntoSocket(socket, "ack");
 
     char fileNameBuffer[100];
+    for(int i = 0; i < 99; i++)
+        fileNameBuffer[i] = '\0'; // avoid bug at filename
     readDataFromSocket(socket, fileNameBuffer, sizeof(fileNameBuffer));
     writeAckIntoSocket(socket, "ack");
 
