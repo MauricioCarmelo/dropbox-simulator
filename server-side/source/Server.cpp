@@ -83,11 +83,11 @@ void* Server::downloadFileCommand(void *arg, commandPacket command) {
 
         char* fileContent = (char*)malloc(length);
 
-        cout << "[Instruction] Reading " << streamPath.str() << endl;
+        cout << "[Server] Reading " << streamPath.str() << endl;
         wantedFile.read(fileContent, length);
 
         if(fileContent){
-            cout << "[Instruction] Whole file read successfully, " << length << " bytes read" << endl;
+            cout << "[Server] Whole file read successfully, " << length << " bytes read" << endl;
 
             sendDataToSocket(socket, &length, sizeof(long));
             waitForSocketAck(socket);
@@ -96,11 +96,16 @@ void* Server::downloadFileCommand(void *arg, commandPacket command) {
             waitForSocketAck(socket);
         }
         else
-            cout << "[Instruction] Error: couldn't read whole file" << endl;
+            cout << "[Server] Error: couldn't read whole file" << endl;
 
         wantedFile.close();
 
         delete[] fileContent;
+    }
+    else{
+        cout << "[Server] Error: couldn't find file " << command.additionalInfo << endl;
+        char* not_downloaded_message = (char*)malloc(sizeof("ndown"));
+        sendDataToSocket(socket, not_downloaded_message, sizeof("ndown"));
     }
 
 }

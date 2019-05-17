@@ -224,22 +224,28 @@ int Client::downloadFile(char *filename) {
 
     char fileSizeBuffer[sizeof(long)];
     readDataFromSocket(fileSizeBuffer, sizeof(long));
-    writeAckIntoSocket("ack");
-
     long payloadSize = *(long *)fileSizeBuffer;
-    char payload[payloadSize];
-    readLargePayloadFromSocket(payload, payloadSize);
-    writeAckIntoSocket("ack");
 
-    stringstream pathStream;
-    pathStream << "./" << filename;
-    string path = pathStream.str();
+    if(payloadSize <= 0){
+        cout << "[Client][Download] Error: file doesn't exist in server" << endl;
+    }
+    else{
+        writeAckIntoSocket("ack");
 
-    ofstream offFile(path);
-    offFile.write(payload, payloadSize);
-    offFile.close();
+        char payload[payloadSize];
+        readLargePayloadFromSocket(payload, payloadSize);
+        writeAckIntoSocket("ack");
 
-    cout << "[Client][Download] File received! ";
+        stringstream pathStream;
+        pathStream << "./" << filename;
+        string path = pathStream.str();
+
+        ofstream offFile(path);
+        offFile.write(payload, payloadSize);
+        offFile.close();
+
+        cout << "[Client][Download] File received! ";
+    }
 
     return 0;
 }

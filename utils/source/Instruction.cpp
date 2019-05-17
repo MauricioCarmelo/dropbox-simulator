@@ -154,7 +154,7 @@ void Instruction::download_file(Client client){
     delete[] fileContent;
     delete[] filepath;*/
 
-    cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
+    //cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
 }
 
 void Instruction::delete_file(Client client){
