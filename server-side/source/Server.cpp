@@ -153,19 +153,15 @@ void* Server::listServerCommand(void *arg) {
                     timespec changed_time = file_status.st_ctim;
                     char* formatted_time = (char*)malloc(32);
 
-                    cout << "\nFile: " << ent->d_name << endl;
                     dataInStringStream << "File: " << ent->d_name << "\n";
 
                     format_from_timespec_to_string(formatted_time, modification_time);
-                    cout << "\tModification time: " << formatted_time << endl;
                     dataInStringStream << "\tModification time: " << formatted_time << "\n";
 
                     format_from_timespec_to_string(formatted_time, access_time);
-                    cout << "\tAccess time: " << formatted_time << endl;
                     dataInStringStream << "\tAccess time: " << formatted_time << "\n";
 
                     format_from_timespec_to_string(formatted_time, changed_time);
-                    cout << "\tChange time: " << formatted_time << endl;
                     dataInStringStream << "\tChange time: " << formatted_time << "\n";
 
                 }
