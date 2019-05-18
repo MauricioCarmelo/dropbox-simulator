@@ -201,43 +201,32 @@ void *Server::mediatorThread(void *arg) {
     auto insert_user_result = insert_user(user);
 
     if ( insert_user_result == ERROR ) {
-        //write(arg,"nack1", 5);
         writeAckIntoSocket(socket, "nack1");
-
         pthread_exit(arg);
-        // TERMINAR A THREAD AQUI
+        // THREAD TERMINA AQUI
     }
     else if( insert_user_result == MAX_USERS_REACHED) {
         //write(socket,"nack2", 5);
         writeAckIntoSocket(socket, "nack2");
-
         pthread_exit(arg);
-        // TERMINAR A THREAD AQUI
+        // THREAD TERMINA AQUI
     }
     else if( insert_user_result == USER_ALREADY_CONNECTED) {
 
         auto insert_device_result = insert_device(user, device_id);
         if( insert_device_result == MAX_DEVICES_REACHED ) {
-            //write(socket,"nack3", 5);
             writeAckIntoSocket(socket, "nack3");
-
-            // TERMINAR A THREAD AQUI
             pthread_exit(arg);
+            // THREAD TERMINA AQUI
         }
         else if ( insert_device_result == DEVICE_ALREADY_CONNECTED) {
-
-            // VER QUAL EH O T E COLOCAR NO SOCKET DO DEVICE CORRETO
-
-            //write(socket,"nack4", 5);
-            writeAckIntoSocket(socket, "nack4");
-
-            // VERIFICAR SE O SOCKET REFERENTE AO TIPO DE CONEXAO ESTA CONECTADO. SE SIM, TERMINAR EXECUCAO
-            // SE NAO, INSERIR O SOCKET NA ESTRUTURA DO USUARIO, NO DEVICE CORRESPONDENTE
+            insert_socket(user, device_id, socket, connection.socketType);
+            writeAckIntoSocket(socket, "ack");
+            // THREAD SEGUE EXECUCAO
         }
         else if (insert_device_result == SUCCESS) {
-            //write(socket,"ack", 3);
+            insert_socket(user, device_id, socket, connection.socketType);
             writeAckIntoSocket(socket, "ack");
-
             // THREAD SEGUE EXECUCAO
         }
 
@@ -245,17 +234,14 @@ void *Server::mediatorThread(void *arg) {
     else if( insert_user_result == SUCCESS ) {
         auto insert_device_result = insert_device(user, device_id);
         if( insert_device_result == ERROR ) {
-            //write(socket,"nack5", 5);
             writeAckIntoSocket(socket, "nack5");
-
-            // REMOVE USER
-            // TERMINAR A THREAD AQUI
+            if (is_device_connected(user) == false)
+                remove_user(user);
             pthread_exit(arg);
         }
         else if (insert_user_result == SUCCESS) {
-            //write(socket, "ack", 3);
+            insert_socket(user, device_id, socket, connection.socketType);
             writeAckIntoSocket(socket, "ack");
-
             // THREAD SEGUE EXECUCAO
         }
     }
@@ -292,10 +278,13 @@ int Server::run() {
     fileManager.createDir(DATABASE_DIR);
 
     while (i<50){
-        if ((newsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
+        int *newsockfd_address;
+        newsockfd_address = (int*)malloc(sizeof(int));
+
+        if ((*newsockfd_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
             std::cout << "[Server] ERROR on accept" << endl;
 
-        if( pthread_create(&threads[i], NULL, &Server::mediatorThread, &newsockfd) != 0 )
+        if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
             std::cout << "[Server] Failed to create thread" << endl;
 
         i++;
@@ -347,7 +336,7 @@ int insert_user(std::string name)
     auto user = get_user(name);
     if (user != nullptr) {
         std::cout << "user already exists" << std::endl;
-        return ERROR;
+        return USER_ALREADY_CONNECTED;
     }
 
     if (number_of_users_logged() >= MAX_USERS) {
@@ -402,10 +391,8 @@ User* get_user(std::string name)
     return nullptr;
 }
 
-
 int insert_device(std::string name, int device_id)
 {
-
     auto user = get_user(name);
     if (user == nullptr) {
         std::cout << "user not found" << std::endl;
@@ -415,13 +402,13 @@ int insert_device(std::string name, int device_id)
     auto dev_aux = get_device(device_id, name);
     if (dev_aux != nullptr) {
         std::cout << "device already connected" << std::endl;
-        return ERROR;
+        return DEVICE_ALREADY_CONNECTED;
     }
 
     auto device = get_available_device(name);
     if (device == nullptr){
         std::cout << "available device not found" << std::endl;
-        return ERROR;
+        return MAX_DEVICES_REACHED;
     }
 
     device->id = device_id;      // insert device
@@ -505,7 +492,7 @@ Device* get_available_device(std::string name)
 int insert_socket(std::string name, int device_id, int socket_descriptor, int socket_type)
 {
     auto device = get_device(device_id, name);
-    switch (device_id){
+    switch (socket_type){
         case T1:
             device->socket1 = socket_descriptor;
             break;
