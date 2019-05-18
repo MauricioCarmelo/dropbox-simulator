@@ -255,11 +255,28 @@ int Client::list_server() {
     command_packet.packetType = CMD;
     command_packet.command = LIST_SERVER;
 
-    cout << "[Client][List server]" << endl;
+    cout << "[Client][List server] Started" << endl;
     sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
     waitForSocketAck();
 
     cout << "[Client][List server] Ack received! " << endl;
+
+    char stringSizeBuffer[sizeof(long)];
+    readDataFromSocket(stringSizeBuffer, sizeof(long));
+    long payloadSize = *(long *)stringSizeBuffer;
+
+    if(payloadSize <= 0){
+        cout << "[Client][List Server] Error: There are no files in the server" << endl;
+    }
+    else{
+        writeAckIntoSocket("ack");
+
+        char payload[payloadSize];
+        readLargePayloadFromSocket(payload, payloadSize);
+        writeAckIntoSocket("ack");
+
+        cout << "[Client][List Server] List Server Command: " << endl << payload << endl;
+    }
 
     return 0;
 }

@@ -113,6 +113,7 @@ void* Server::downloadFileCommand(void *arg, commandPacket command) {
 void* Server::deleteFileCommand(void *arg, commandPacket command) {
 
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    int socket = userCurrentSocket->currentSocket;
     string userName = userCurrentSocket->userName;
 
     stringstream filepath;
@@ -132,10 +133,12 @@ void* Server::listServerCommand(void *arg) {
 
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
     string userName = userCurrentSocket->userName;
+    int socket = userCurrentSocket->currentSocket;
 
     stringstream filepath;
     filepath << "./database/" << userName;
     string filepathstring = filepath.str();
+    stringstream dataInStringStream;
 
     DIR *dir;
     struct dirent *ent;
@@ -150,23 +153,37 @@ void* Server::listServerCommand(void *arg) {
                     timespec changed_time = file_status.st_ctim;
                     char* formatted_time = (char*)malloc(32);
 
-                    cout << "File: " << ent->d_name << endl;
+                    cout << "\nFile: " << ent->d_name << endl;
+                    dataInStringStream << "File: " << ent->d_name << "\n";
 
                     format_from_timespec_to_string(formatted_time, modification_time);
                     cout << "\tModification time: " << formatted_time << endl;
+                    dataInStringStream << "\tModification time: " << formatted_time << "\n";
 
                     format_from_timespec_to_string(formatted_time, access_time);
                     cout << "\tAccess time: " << formatted_time << endl;
+                    dataInStringStream << "\tAccess time: " << formatted_time << "\n";
 
                     format_from_timespec_to_string(formatted_time, changed_time);
                     cout << "\tChange time: " << formatted_time << endl;
+                    dataInStringStream << "\tChange time: " << formatted_time << "\n";
+
                 }
             }
         }
         closedir (dir);
+        string dataInString = dataInStringStream.str();
+
+        long lenght = dataInString.length();
+
+        sendDataToSocket(socket, &lenght, sizeof(long));
+        waitForSocketAck(socket);
+
+        sendLargePayloadToSocket(socket, const_cast<char *>(dataInString.c_str()), dataInString.length());
+        waitForSocketAck(socket);
     } else {
         /* could not open directory */
-        cout << "problem"; //TODO send this data to client
+        cout << "[List Server] Could not open directory";
     }
 
 }
