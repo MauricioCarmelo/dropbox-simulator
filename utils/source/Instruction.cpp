@@ -83,6 +83,15 @@ void Instruction::set_path(char path[]) {
     strcpy(this->path, path);
 }
 
+void Instruction::reset(){
+    command_id = INVALID_COMMAND;
+    for(int i = 0; i < 50; i ++){
+        filename[i] = '\0';
+        command_name[i] = '\0';
+        path[i] = '\0';
+    }
+}
+
 void Instruction::upload_file(Client client){
     cout << "[Instruction] Upload function called..." << endl;
 
@@ -124,6 +133,9 @@ void Instruction::upload_file(Client client){
 void Instruction::download_file(Client client){
     cout << "Download function called..." << endl;
 
+    client.downloadFile(filename);
+
+    /*
     // fileContent será recebido do servidor (por parâmetro?)
     // então essas linhas não serão necessárias
     char str[] = "[Instruction] esse é um exemplo de conteúdo do arquivo recebido do servidor.";
@@ -140,9 +152,9 @@ void Instruction::download_file(Client client){
     file.close();
 
     delete[] fileContent;
-    delete[] filepath;
+    delete[] filepath;*/
 
-    cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
+    //cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
 }
 
 void Instruction::delete_file(Client client){
@@ -150,23 +162,13 @@ void Instruction::delete_file(Client client){
 
     client.deleteFile(filename);
 
-    /*
-    char* filepath = (char*)malloc(sizeof(PATH_TO_SYNC_DIR) + sizeof(path) + sizeof(filename));
-    strcpy(filepath, PATH_TO_SYNC_DIR);
-    strcat(filepath, path);
-    strcat(filepath, filename);
-
-    int remove_result = remove(filepath);
-    if(remove_result != 0)
-        perror("Error deleting file");
-    else
-        cout << "[Instruction] File " << filename << "deleted succesfully" << endl;
-
-    delete[] filepath; */
 }
 
-void Instruction::list_server(){
+void Instruction::list_server(Client client){
     cout << "[Instruction] List server function called..." << endl;
+
+    client.list_server();
+
 }
 
 void Instruction::list_client(){

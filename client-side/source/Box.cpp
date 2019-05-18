@@ -74,11 +74,12 @@ int Box::open(char *host, int port) {
     }
 
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify, c2); // c2 prints ABORT
+    thread th_inotify(th_func_inotify, c1); // c2 prints ABORT
+
     // criar a terceita thread aqui
 
     th_console.join();
-    //th_inotify.join();
+    th_inotify.join();
 
     std::cout << "TERMINOU" << std::endl;
 }
@@ -103,6 +104,7 @@ void* Box::th_func_monitor_console(Client client){
         scanf("%[^\n]", line);
         getchar();
 
+        instruction.reset();
         instruction.prepare(line);
 
         switch(instruction.get_command_id()){
@@ -119,7 +121,7 @@ void* Box::th_func_monitor_console(Client client){
                 break;
 
             case LIST_SERVER:
-                instruction.list_server();
+                instruction.list_server(client);
                 break;
 
             case LIST_CLIENT:
@@ -201,6 +203,9 @@ void* Box::th_func_inotify(Client client){
                 if(event->len){
                     if(event->mask & IN_DELETE){ // dispara apenas usando rm -f nome_arquivo.ext no console
                         cout << "[Box] Directory or file " << event->name << " was deleted" << endl;
+                        instruction.set_filename(event->name);
+                        instruction.set_path("sync_dir/");
+                        instruction.delete_file(client);
                     }
                     else if(event->mask & IN_CLOSE_WRITE){ // dispara na criação (console) e modificação do arquivo (duas vezes na modificação)
                         cout << "[Box] Directory or file " << event->name << " was created/modified" << endl;
@@ -211,14 +216,18 @@ void* Box::th_func_inotify(Client client){
                     else if(event->mask & IN_MOVED_FROM){ // dispara ao deletar/arrastar arquivo para fora da pasta (e ao modificar, porém com nome .goutputstream-XXXXXX)
                         string event_name = event->name;
                         if(event_name.find(".goutputstream-") != string::npos); // avoid printing this event name
-                        else
+                        else{
                             cout << "[Box] Directory or file " << event->name << " was deleted/moved out" << endl;
+                            instruction.set_filename(event->name);
+                            instruction.set_path("sync_dir/");
+                            instruction.delete_file(client);
+                        }
                     }
                     else if(event->mask & IN_MOVED_TO){ // dispara ao arrastar arquivo para dentro da pasta e na criação (console)
                         cout << "[Box] Directory of file " << event->name << " was created/moved in" << endl;
-                        /*instruction.set_filename(event->name);
+                        instruction.set_filename(event->name);
                         instruction.set_path("sync_dir/");
-                        instruction.upload_file(client);*/
+                        instruction.upload_file(client);
                     }
 
                     i += MONITOR_SINGLE_EVENT_SIZE + event->len;

@@ -88,6 +88,7 @@ filePacket Client::prepareFilePacket(char *filename, int size, char *fileContent
 
     file_packet.packetType = FILE;
     file_packet.fileSize = size;
+    file_packet.fileName = (char*)malloc(size);
     strcpy(file_packet.fileName, filename);
     file_packet.payload = (char*)malloc(size);
     memcpy(file_packet.payload, fileContent, size);
@@ -123,6 +124,42 @@ void Client::waitForSocketAck() {
     if (ackReturn == -1) {
         cout << "waitForSocketAck: Failed to receive ack" << endl;
     }
+}
+
+int Client::readDataFromSocket(char *buffer, size_t size) {
+    int bytesRead = read(sockfd, buffer, size);
+    if (bytesRead == -1) {
+        cout << "readDataFromSocket: Failed to receive data" << endl;
+    }
+}
+
+int Client::readLargePayloadFromSocket(char *buffer, size_t size) {
+    char smallerBuffer[BUFFER_SIZE];
+    int bytesReadFromSocket = 0;
+    int bytesReadCurrentIteration = 0;
+    int bufferSize;
+
+    do {
+        bufferSize = determineCorrectSizeToBeCopied(size, bytesReadFromSocket);
+
+        bytesReadCurrentIteration = read(sockfd, smallerBuffer, bufferSize);
+        if (bufferSize != bytesReadCurrentIteration) {
+            cout << "Error reading current buffer in socket - should retry this part" << endl;
+        }
+
+        memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
+
+        bytesReadFromSocket += bufferSize;
+    } while(bytesReadFromSocket < size);
+    return bytesReadFromSocket;
+}
+
+int Client::writeAckIntoSocket(const char *message) {
+    int bytesWritenIntoSocket = write(sockfd, message, strlen(message));
+    if (bytesWritenIntoSocket == -1) {
+        cout << "writeAckIntoSocket: failed to write ack" << endl;
+    }
+    return bytesWritenIntoSocket;
 }
 
 int Client::sendLargePayloadToSocket(char *data, size_t totalSize) {
@@ -169,6 +206,77 @@ int Client::deleteFile(char *filename)
     waitForSocketAck();
 
     cout << "[Client][Delete] Ack received! ";
+
+    return 0;
+}
+
+int Client::downloadFile(char *filename) {
+    commandPacket command_packet;
+    command_packet.packetType = CMD;
+    command_packet.command = DOWNLOAD;
+    strcpy(command_packet.additionalInfo, filename);
+
+
+    cout << "[Client][Download] Sending packet to ask for file: " << command_packet.additionalInfo << endl;
+
+    sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
+    waitForSocketAck();
+
+    char fileSizeBuffer[sizeof(long)];
+    readDataFromSocket(fileSizeBuffer, sizeof(long));
+    long payloadSize = *(long *)fileSizeBuffer;
+
+    if(payloadSize <= 0){
+        cout << "[Client][Download] Error: file doesn't exist in server" << endl;
+    }
+    else{
+        writeAckIntoSocket("ack");
+
+        char payload[payloadSize];
+        readLargePayloadFromSocket(payload, payloadSize);
+        writeAckIntoSocket("ack");
+
+        stringstream pathStream;
+        pathStream << "./" << filename;
+        string path = pathStream.str();
+
+        ofstream offFile(path);
+        offFile.write(payload, payloadSize);
+        offFile.close();
+
+        cout << "[Client][Download] File received! ";
+    }
+
+    return 0;
+}
+
+int Client::list_server() {
+    commandPacket command_packet;
+    command_packet.packetType = CMD;
+    command_packet.command = LIST_SERVER;
+
+    cout << "[Client][List server] Started" << endl;
+    sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
+    waitForSocketAck();
+
+    cout << "[Client][List server] Ack received! " << endl;
+
+    char stringSizeBuffer[sizeof(long)];
+    readDataFromSocket(stringSizeBuffer, sizeof(long));
+    long payloadSize = *(long *)stringSizeBuffer;
+
+    if(payloadSize <= 0){
+        cout << "[Client][List Server] Error: There are no files in the server" << endl;
+    }
+    else{
+        writeAckIntoSocket("ack");
+
+        char payload[payloadSize];
+        readLargePayloadFromSocket(payload, payloadSize);
+        writeAckIntoSocket("ack");
+
+        cout << "[Client][List Server] List Server Command: " << endl << payload << endl;
+    }
 
     return 0;
 }

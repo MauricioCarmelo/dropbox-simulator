@@ -39,10 +39,11 @@ public:
     void set_filename(char filename[]);
     void set_path(char path[]);
     void print();
+    void reset();
     void upload_file(Client client);
     void download_file(Client client);
     void delete_file(Client client);
-    void list_server();
+    void list_server(Client client);
     void list_client();
     void get_sync_dir();
     void exit(Client client);

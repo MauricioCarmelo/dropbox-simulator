@@ -46,6 +46,8 @@ void* Server::uploadFileCommand(void *arg) {
     writeAckIntoSocket(socket, "ack");
 
     char fileNameBuffer[100];
+    for(int i = 0; i < 99; i++)
+        fileNameBuffer[i] = '\0'; // avoid bug at filename
     readDataFromSocket(socket, fileNameBuffer, sizeof(fileNameBuffer));
     writeAckIntoSocket(socket, "ack");
 
@@ -64,13 +66,54 @@ void* Server::uploadFileCommand(void *arg) {
     cout << " [SERVER] Arquivo copiado no path:" << completePath << endl;
 }
 
-void* Server::downloadFileCommand(void *arg) {
+void* Server::downloadFileCommand(void *arg, commandPacket command) {
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    int socket = userCurrentSocket->currentSocket;
+    string user = userCurrentSocket->userName;
+
+    stringstream streamPath;
+    streamPath << DATABASE_DIR << "/" << user << "/" << command.additionalInfo;
+    string path = streamPath.str();
+
+    ifstream wantedFile(path, ifstream::binary);
+    if (wantedFile) {
+        wantedFile.seekg(0, wantedFile.end);
+        long length = wantedFile.tellg();
+        wantedFile.seekg(0, wantedFile.beg);
+
+        char* fileContent = (char*)malloc(length);
+
+        cout << "[Server] Reading " << streamPath.str() << endl;
+        wantedFile.read(fileContent, length);
+
+        if(fileContent){
+            cout << "[Server] Whole file read successfully, " << length << " bytes read" << endl;
+
+            sendDataToSocket(socket, &length, sizeof(long));
+            waitForSocketAck(socket);
+
+            sendLargePayloadToSocket(socket, fileContent, length);
+            waitForSocketAck(socket);
+        }
+        else
+            cout << "[Server] Error: couldn't read whole file" << endl;
+
+        wantedFile.close();
+
+        delete[] fileContent;
+    }
+    else{
+        cout << "[Server] Error: couldn't find file " << command.additionalInfo << endl;
+        char* not_downloaded_message = (char*)malloc(sizeof("ndown"));
+        sendDataToSocket(socket, not_downloaded_message, sizeof("ndown"));
+    }
 
 }
 
 void* Server::deleteFileCommand(void *arg, commandPacket command) {
 
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    int socket = userCurrentSocket->currentSocket;
     string userName = userCurrentSocket->userName;
 
     stringstream filepath;
@@ -87,6 +130,57 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
 }
 
 void* Server::listServerCommand(void *arg) {
+
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    string userName = userCurrentSocket->userName;
+    int socket = userCurrentSocket->currentSocket;
+
+    stringstream filepath;
+    filepath << "./database/" << userName;
+    string filepathstring = filepath.str();
+    stringstream dataInStringStream;
+
+    DIR *dir;
+    struct dirent *ent;
+    if ((dir = opendir (filepathstring.c_str())) != NULL) {
+        /* print all the files and directories within directory */
+        while ((ent = readdir (dir)) != NULL) {
+            if(strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0){
+                struct stat file_status;
+                if(stat(filepathstring.c_str(), &file_status) == 0){
+                    timespec modification_time = file_status.st_mtim;
+                    timespec access_time = file_status.st_atim;
+                    timespec changed_time = file_status.st_ctim;
+                    char* formatted_time = (char*)malloc(32);
+
+                    dataInStringStream << "File: " << ent->d_name << "\n";
+
+                    format_from_timespec_to_string(formatted_time, modification_time);
+                    dataInStringStream << "\tModification time: " << formatted_time << "\n";
+
+                    format_from_timespec_to_string(formatted_time, access_time);
+                    dataInStringStream << "\tAccess time: " << formatted_time << "\n";
+
+                    format_from_timespec_to_string(formatted_time, changed_time);
+                    dataInStringStream << "\tChange time: " << formatted_time << "\n";
+
+                }
+            }
+        }
+        closedir (dir);
+        string dataInString = dataInStringStream.str();
+
+        long lenght = dataInString.length();
+
+        sendDataToSocket(socket, &lenght, sizeof(long));
+        waitForSocketAck(socket);
+
+        sendLargePayloadToSocket(socket, const_cast<char *>(dataInString.c_str()), dataInString.length());
+        waitForSocketAck(socket);
+    } else {
+        /* could not open directory */
+        cout << "[List Server] Could not open directory";
+    }
 
 }
 
@@ -109,7 +203,7 @@ void* Server::terminalThreadFunction(void *arg) {
                 uploadFileCommand(arg);
                 break;
             case DOWNLOAD:
-                downloadFileCommand(arg);
+                downloadFileCommand(arg, command);
                 break;
             case DELETE:
                 deleteFileCommand(arg, command);
@@ -168,6 +262,45 @@ int Server::determineCorrectSizeToBeRead(int payloadSize, int bytesReadFromSocke
         return BUFFER_SIZE;
     else
         return payloadSize - bytesReadFromSocket;
+}
+
+int Server::sendDataToSocket(int socketId, void *data, size_t size) {
+    int bytesSocketReceived = write(socketId, data, size);
+    if (bytesSocketReceived != size) {
+        cout << "sendDataToSocket: Failed to send data to socket" << endl;
+    }
+    return bytesSocketReceived;
+}
+
+int Server::sendLargePayloadToSocket(int socketId, char *data, size_t totalSize) {
+    char buffer[BUFFER_SIZE];
+    int bytesCopiedFromPayload = 0;
+    int bytesWritenInSocket = 0;
+    int bytesWritenInCurrentIteration = 0;
+    int bufferSize;
+    do {
+        bufferSize = determineCorrectSizeToBeRead(totalSize, bytesWritenInSocket);
+
+        memcpy(buffer, data + bytesCopiedFromPayload, bufferSize);
+        bytesCopiedFromPayload += bufferSize;
+
+        bytesWritenInCurrentIteration = sendDataToSocket(socketId, buffer, bufferSize);
+        if (bufferSize != bytesWritenInCurrentIteration) {
+            cout << "Client.sendFilePacket: Error writing current buffer in socket" << endl;
+        }
+
+        bytesWritenInSocket += bytesWritenInCurrentIteration;
+
+    } while (bytesWritenInSocket < totalSize);
+    return bytesWritenInSocket;
+}
+
+void Server::waitForSocketAck(int socketId) {
+    char ackBuffer[sizeof(uint64_t)];
+    int ackReturn = read(socketId, ackBuffer, sizeof(uint64_t));
+    if (ackReturn == -1) {
+        cout << "waitForSocketAck: Failed to receive ack" << endl;
+    }
 }
 
 
