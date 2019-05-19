@@ -8,6 +8,7 @@
 
 User users[MAX_USERS];
 sem_t mutex_user_structure;
+sem_t has_to_update;
 
 Server::Server() = default;
 
@@ -437,6 +438,7 @@ int Server::run() {
     initiate_user_controller_structure();
 
     sem_init(&mutex_user_structure, 0, 1);
+    sem_init(&has_to_update, 0, 0);
 
     while (i<50){
         int *newsockfd_address;
