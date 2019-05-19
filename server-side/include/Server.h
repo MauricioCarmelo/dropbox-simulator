@@ -58,6 +58,7 @@ int initiate_user_controller_structure();
 int insert_user(std::string name);
 User* get_user(std::string name);
 int insert_device(std::string name, int device_id);
+int remove_device(std::string name, int device_id);
 Device *get_device(int device_id, std::string name);
 int number_of_devices(std::string name);
 Device* get_available_device(std::string name);
@@ -113,6 +114,7 @@ public:
     static void *deleteFileCommand(void *arg, commandPacket commandPacket);
     static void *downloadFileCommand(void *arg, commandPacket commandPacket);
     static void *listServerCommand(void *arg);
+    static void *exitCommand(void *arg);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client
 
