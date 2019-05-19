@@ -32,8 +32,8 @@ int main(int argc, char *argv[]) {
     char userFolder[FOLDER_SIZE];
     strcpy(userFolder, "./");
     strcat(userFolder, SYNC_DIR);
-    strcat(userFolder, "_");
-    strcat(userFolder, username);
+    //strcat(userFolder, "_");
+    //strcat(userFolder, username);
     box.setUserFolder(userFolder);
     box.open(host, port);
     /*th_monitor_console.join();
