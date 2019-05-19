@@ -332,23 +332,12 @@ void* Server::iNotifyThreadFunction(void *arg) {
 
 }
 
-void *Server::mediatorThread(void *arg) {
-    cout << "[Server] got in the mediator thread" << endl;
-    connection_t connection;
-    pthread_t thread;
-    int socket = *(int *) arg;
+int Server::handle_user_controller_structure(connection_t *connection, int socket, void *arg) {
 
-    readLargePayloadFromSocket(socket, (char*)&connection, sizeof(struct connection));
-
-    // checar se o usuario esta conectado
-    // ack = read(socket, &connection, sizeof(struct connection));
-
-    // check initial configuration
-    //char username = connection.username;
     char username[100];
-    strcpy(username, connection.username);
+    strcpy(username, connection->username);
     std::string user(username);
-    auto device_id = connection.device;
+    auto device_id = connection->device;
 
     auto insert_user_result = insert_user(user);
 
@@ -372,12 +361,12 @@ void *Server::mediatorThread(void *arg) {
             // THREAD TERMINA AQUI
         }
         else if ( insert_device_result == DEVICE_ALREADY_CONNECTED) {
-            insert_socket(user, device_id, socket, connection.socketType);
+            insert_socket(user, device_id, socket, connection->socketType);
             writeAckIntoSocket(socket, "ack");
             // THREAD SEGUE EXECUCAO
         }
         else if (insert_device_result == SUCCESS) {
-            insert_socket(user, device_id, socket, connection.socketType);
+            insert_socket(user, device_id, socket, connection->socketType);
             writeAckIntoSocket(socket, "ack");
             // THREAD SEGUE EXECUCAO
         }
@@ -392,11 +381,25 @@ void *Server::mediatorThread(void *arg) {
             pthread_exit(arg);
         }
         else if (insert_user_result == SUCCESS) {
-            insert_socket(user, device_id, socket, connection.socketType);
+            insert_socket(user, device_id, socket, connection->socketType);
             writeAckIntoSocket(socket, "ack");
             // THREAD SEGUE EXECUCAO
         }
     }
+}
+
+void *Server::mediatorThread(void *arg) {
+    cout << "[Server] got in the mediator thread" << endl;
+    connection_t connection;
+    pthread_t thread;
+    int socket = *(int *) arg;
+
+    readLargePayloadFromSocket(socket, (char*)&connection, sizeof(struct connection));
+
+
+    // lock na secao critica
+    handle_user_controller_structure(&connection, socket, arg);
+    // liberar secao critica
 
     createUserDirectory(connection.username);
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)malloc(sizeof(UserCurrentSocket));

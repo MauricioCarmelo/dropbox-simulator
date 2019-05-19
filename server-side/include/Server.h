@@ -54,6 +54,7 @@ struct UserCurrentSocket {
     int currentSocket; //test before trying conversion
 };
 
+
 int initiate_user_controller_structure();
 int insert_user(std::string name);
 User* get_user(std::string name);
@@ -93,6 +94,7 @@ private:
     static int sendDataToSocket(int socketId, void *data, size_t size);
     static int sendLargePayloadToSocket(int socketId, char *data, size_t totalSize);
     static void waitForSocketAck(int socketId);
+    static int handle_user_controller_structure(connection_t *connection, int socket, void *arg);
 
 public:
 
