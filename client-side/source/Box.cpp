@@ -74,7 +74,7 @@ int Box::open(char *host, int port) {
     }
 
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify, c1); // c2 prints ABORT
+    thread th_inotify(th_func_inotify, c2); // c2 prints ABORT
 
     // criar a terceita thread aqui
 
@@ -97,10 +97,11 @@ bool Box::createSyncDir() {
 void* Box::th_func_monitor_console(Client client){
     cout << "[Box] Monitor console thread" << endl;
 
-    char line[100];
+    char line[200];
     line[0] = 'a'; // avoid closing application when pressing enter only
     while(instruction.get_command_id() != EXIT)
     {
+        line[0] = 'a'; // avoid closing application when pressing enter only
         scanf("%[^\n]", line);
         getchar();
 
