@@ -8,7 +8,6 @@
 
 User users[MAX_USERS];
 sem_t mutex_user_structure;
-sem_t has_to_update;
 
 Server::Server() = default;
 
@@ -38,6 +37,7 @@ void* Server::uploadFileCommand(void *arg) {
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
     int socket = userCurrentSocket->currentSocket;
     string username = userCurrentSocket->userName;
+    int device = userCurrentSocket->currentDevice;
 
     char packetTypeBuffer[sizeof(uint64_t)];
     readDataFromSocket(socket, packetTypeBuffer, sizeof(uint64_t));
@@ -66,6 +66,17 @@ void* Server::uploadFileCommand(void *arg) {
     offFile.write(payload, payloadSize);
     offFile.close();
     cout << " [SERVER] Arquivo copiado no path:" << completePath << endl;
+
+
+    auto user_pointer = get_user(username);
+    for(auto& device_index : user_pointer->devices) {
+        if (device_index.id != device) {
+            // enviar pra esse, no socket 3
+            auto s = device_index.socket3;
+            // SEND FILE
+
+        }
+    }
 }
 
 void* Server::downloadFileCommand(void *arg, commandPacket command) {
@@ -438,7 +449,8 @@ int Server::run() {
     initiate_user_controller_structure();
 
     sem_init(&mutex_user_structure, 0, 1);
-    sem_init(&has_to_update, 0, 0);
+    //sem_init(&semaphore_update_other_devices, 0, 0);
+    //sem_init(&semaphore_devices_updated, 0, 0);
 
     while (i<50){
         int *newsockfd_address;
@@ -452,29 +464,6 @@ int Server::run() {
 
         i++;
     }
-}
-
-
-
-int Server::countUserConnections(string user) {
-    int i, count = 0;
-
-    while (semaphore == 1){
-        //do nothing
-    }
-
-    semaphore = 1;
-
-    for (i = 0; i < 10; i++){
-        if (clients[i].name == user && clients[i].isLogged)
-            count++;
-    }
-
-     cout << "[Server] User " << user << "has " << count << "connections" << endl;
-
-    semaphore = 0;
-
-    return count;
 }
 
 void Server::createUserDirectory(const char *user) {

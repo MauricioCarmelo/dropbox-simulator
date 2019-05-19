@@ -68,9 +68,9 @@ int remove_user(std::string name);
 int is_device_connected(std::string name);
 int number_of_users_logged();
 
+
 // test
 void print_user_structure();
-
 
 class Server {
 
@@ -84,6 +84,9 @@ private:
     struct sockaddr_in serv_addr, cli_addr;
     Client clients[10];
     int semaphore = 0; // we should need this in the future
+    sem_t semaphore_update_other_devices;
+    sem_t semaphore_devices_updated;
+
     pthread_t threads[50];
     //static User users[MAX_USERS];
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
@@ -100,12 +103,8 @@ public:
 
     Server();
     ~Server() {};
-    //Server(const File &fileInfo, const Client &client);
     int createSocket(char* host, int port);
-    int receive_file();
-    int countUserConnections(std::string user); //counts how many connections a user has
     static void createUserDirectory(const char *user);
-    //int receive_file_stream(char *stream);
     int run();
     int handle_type(int s);
     static void *mediatorThread(void *arg);
