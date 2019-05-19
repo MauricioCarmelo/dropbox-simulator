@@ -184,6 +184,24 @@ void* Server::listServerCommand(void *arg) {
 
 }
 
+void* Server::exitCommand(void *arg) {
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    string userName = userCurrentSocket->userName;
+    int socket = userCurrentSocket->currentSocket;
+    int device = userCurrentSocket->currentDevice;
+
+    if (remove_device(userName, device) == SUCCESS) {
+        if ( !is_device_connected(userName) ) {
+            remove_user(userName);                  // remove user
+        }
+    }
+    else{
+        std::cout << "[SERVER]: User device still connected" << std::endl;
+    }
+}
+
+
+
 void* Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
 
@@ -212,6 +230,7 @@ void* Server::terminalThreadFunction(void *arg) {
                 listServerCommand(arg);
                 break;
             case EXIT:
+                exitCommand(arg);
                 pthread_exit(arg);
             default:
                 std::cout << "Command Invalid" << std::endl;
@@ -409,6 +428,7 @@ void *Server::mediatorThread(void *arg) {
 int Server::run() {
     int i = 0;
     fileManager.createDir(DATABASE_DIR);
+    initiate_user_controller_structure();
 
     while (i<50){
         int *newsockfd_address;
@@ -508,7 +528,7 @@ int is_device_connected(std::string name)
     }
 
     for (auto &device : user->devices) {
-        if (device.id != 0)
+        if (device.id != -1)
             return true;
     }
     return false;
@@ -548,6 +568,27 @@ int insert_device(std::string name, int device_id)
     return SUCCESS;
 }
 
+int remove_device(std::string name, int device_id)
+{
+    auto user = get_user(name);
+    if (user == nullptr) {
+        std::cout << "user not found" << std::endl;
+        return ERROR;
+    }
+
+    auto dev_aux = get_device(device_id, name);
+    if (dev_aux == nullptr) {
+        std::cout << "device not found" << std::endl;
+        return ERROR;
+    }
+
+    dev_aux->id = -1;
+    dev_aux->socket1 = -1;
+    dev_aux->socket2 = -1;
+    dev_aux->socket3 = -1;
+    return SUCCESS;
+}
+
 Device *get_device(int device_id, std::string name)
 {
     if (name != "") {               // search device for an specific user
@@ -584,7 +625,7 @@ int number_of_devices(std::string name) {
     }
 
     for (auto &device : user->devices) {
-        if (device.id != 0)
+        if (device.id != -1)
             n++;
     }
     return n;
@@ -616,7 +657,7 @@ Device* get_available_device(std::string name)
     }
 
     for (auto &device : user->devices) {
-        if (device.id == 0) {
+        if (device.id == -1) {
             return &device;
         }
     }
