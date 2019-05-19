@@ -11,6 +11,7 @@
 #include "../../utils/include/masterInclude.h"
 #include <string>
 #include <iostream>
+#include <semaphore.h>
 
 #define BUFFER_SIZE 4   // fazer um buffer maior, 256
 
@@ -53,7 +54,6 @@ struct UserCurrentSocket {
     int currentDevice;
     int currentSocket; //test before trying conversion
 };
-
 
 int initiate_user_controller_structure();
 int insert_user(std::string name);

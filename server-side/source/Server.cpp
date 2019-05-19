@@ -7,6 +7,7 @@
 #include <sys/stat.h>
 
 User users[MAX_USERS];
+sem_t mutex_user_structure;
 
 Server::Server() = default;
 
@@ -230,7 +231,9 @@ void* Server::terminalThreadFunction(void *arg) {
                 listServerCommand(arg);
                 break;
             case EXIT:
+                sem_wait(&mutex_user_structure);
                 exitCommand(arg);
+                sem_post(&mutex_user_structure);
                 pthread_exit(arg);
             default:
                 std::cout << "Command Invalid" << std::endl;
@@ -397,9 +400,9 @@ void *Server::mediatorThread(void *arg) {
     readLargePayloadFromSocket(socket, (char*)&connection, sizeof(struct connection));
 
 
-    // lock na secao critica
+    sem_wait(&mutex_user_structure);     // lock na secao critica
     handle_user_controller_structure(&connection, socket, arg);
-    // liberar secao critica
+    sem_post(&mutex_user_structure);     // liberar secao critica
 
     createUserDirectory(connection.username);
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)malloc(sizeof(UserCurrentSocket));
@@ -432,6 +435,8 @@ int Server::run() {
     int i = 0;
     fileManager.createDir(DATABASE_DIR);
     initiate_user_controller_structure();
+
+    sem_init(&mutex_user_structure, 0, 1);
 
     while (i<50){
         int *newsockfd_address;
