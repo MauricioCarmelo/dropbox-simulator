@@ -8,6 +8,7 @@
 
 User users[MAX_USERS];
 sem_t mutex_user_structure;
+//sem_t semaphore_allocate_connection;
 
 Server::Server() = default;
 
@@ -441,6 +442,8 @@ void *Server::mediatorThread(void *arg) {
         cout << "Expected CONN packet in mediator and received something else" << endl;
         pthread_exit(arg);
     }
+//    pthread_join(thread, NULL);
+//    pthread_exit(arg);
 }
 
 int Server::run() {
@@ -449,20 +452,41 @@ int Server::run() {
     initiate_user_controller_structure();
 
     sem_init(&mutex_user_structure, 0, 1);
-    //sem_init(&semaphore_update_other_devices, 0, 0);
-    //sem_init(&semaphore_devices_updated, 0, 0);
+    //sem_init(&semaphore_allocate_connection, 0, 2);
 
-    while (i<50){
+    int socket_address;
+
+    /*while ( (socket_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) != 0 ) {
+
+        if (socket_address == -1){
+            std::cout << "[Server] ERROR on accept" << endl;
+        }
+        else{
+            int *newsockfd_address;
+            newsockfd_address = (int*)malloc(sizeof(int));
+
+            sem_wait(&semaphore_allocate_connection);
+            if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
+                std::cout << "[Server] Failed to create thread" << endl;
+            sem_post(&semaphore_allocate_connection);
+        }
+    }*/
+
+    //while (i<50) {
+    while (true) {
         int *newsockfd_address;
         newsockfd_address = (int*)malloc(sizeof(int));
 
+        //sem_wait(&semaphore_allocate_connection);   // nao permite que o server estabeca mais conexoes
         if ((*newsockfd_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
             std::cout << "[Server] ERROR on accept" << endl;
 
         if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
             std::cout << "[Server] Failed to create thread" << endl;
 
-        i++;
+        //sem_post(&semaphore_allocate_connection);
+
+        //i++;
     }
 }
 
