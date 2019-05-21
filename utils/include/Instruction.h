@@ -29,7 +29,7 @@ class Instruction{
 private:
     char command_name[50];
     int command_id;
-    char path[50];
+    char path[200];
     char filename[50];
 
 public:

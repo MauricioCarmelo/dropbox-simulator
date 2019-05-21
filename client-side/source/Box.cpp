@@ -1,6 +1,7 @@
 #include "../include/Box.h"
 
 bool exit_command_typed = false;
+bool instruction_source_is_server = false;
 Instruction Box::instruction;
 
 Box::Box()
@@ -75,11 +76,13 @@ int Box::open(char *host, int port) {
 
     thread th_console(th_func_monitor_console, c1);
     thread th_inotify(th_func_inotify, c2); // c2 prints ABORT
+    thread th_server_comm(th_func_server_comm, c3);
 
     // criar a terceita thread aqui
 
     th_console.join();
     th_inotify.join();
+    th_server_comm.join();
 
     std::cout << "TERMINOU" << std::endl;
 }
@@ -203,41 +206,98 @@ void* Box::th_func_inotify(Client client){
                 struct inotify_event* event = (struct inotify_event*)&buffer[i];
                 if(event->len){
                     if(event->mask & IN_DELETE){ // dispara apenas usando rm -f nome_arquivo.ext no console
-                        cout << "[Box] Directory or file " << event->name << " was deleted" << endl;
-                        instruction.set_filename(event->name);
-                        instruction.set_path("sync_dir/");
-                        instruction.delete_file(client);
-                    }
-                    else if(event->mask & IN_CLOSE_WRITE){ // dispara na criação (console) e modificação do arquivo (duas vezes na modificação)
-                        cout << "[Box] Directory or file " << event->name << " was created/modified" << endl;
-                        instruction.set_filename(event->name);
-                        instruction.set_path("sync_dir/");
-                        instruction.upload_file(client);
-                    }
-                    else if(event->mask & IN_MOVED_FROM){ // dispara ao deletar/arrastar arquivo para fora da pasta (e ao modificar, porém com nome .goutputstream-XXXXXX)
-                        string event_name = event->name;
-                        if(event_name.find(".goutputstream-") != string::npos); // avoid printing this event name
-                        else{
-                            cout << "[Box] Directory or file " << event->name << " was deleted/moved out" << endl;
+                        if(!instruction_source_is_server){ // apenas propaga se fonte do evento foi o usuário, e não propagação do server
+                            cout << "[Box] Directory or file " << event->name << " was deleted" << endl;
                             instruction.set_filename(event->name);
                             instruction.set_path("sync_dir/");
                             instruction.delete_file(client);
                         }
                     }
+                    else if(event->mask & IN_CLOSE_WRITE){ // dispara na criação (console) e modificação do arquivo (duas vezes na modificação)
+                        if(!instruction_source_is_server){ // apenas propaga se fonte do evento foi o usuário, e não propagação do server
+                            cout << "[Box] Directory or file " << event->name << " was created/modified" << endl;
+                            instruction.set_filename(event->name);
+                            instruction.set_path("sync_dir/");
+                            instruction.upload_file(client);
+                        }
+                    }
+                    else if(event->mask & IN_MOVED_FROM){ // dispara ao deletar/arrastar arquivo para fora da pasta (e ao modificar, porém com nome .goutputstream-XXXXXX)
+                        string event_name = event->name;
+                        if(event_name.find(".goutputstream-") != string::npos); // avoid printing this event name
+                        else{
+                            if(!instruction_source_is_server){ // apenas propaga se fonte do evento foi o usuário, e não propagação do server
+                                cout << "[Box] Directory or file " << event->name << " was deleted/moved out" << endl;
+                                instruction.set_filename(event->name);
+                                instruction.set_path("sync_dir/");
+                                instruction.delete_file(client);
+                            }
+                        }
+                    }
                     else if(event->mask & IN_MOVED_TO){ // dispara ao arrastar arquivo para dentro da pasta e na criação (console)
-                        cout << "[Box] Directory of file " << event->name << " was created/moved in" << endl;
-                        instruction.set_filename(event->name);
-                        instruction.set_path("sync_dir/");
-                        instruction.upload_file(client);
+                        if(!instruction_source_is_server){ // apenas propaga se fonte do evento foi o usuário, e não propagação do server
+                            cout << "[Box] Directory of file " << event->name << " was created/moved in" << endl;
+                            instruction.set_filename(event->name);
+                            instruction.set_path("sync_dir/");
+                            instruction.upload_file(client);
+                        }
                     }
 
                     i += MONITOR_SINGLE_EVENT_SIZE + event->len;
                 }
             }
+            instruction_source_is_server = false;
         }
     }
 
     inotify_rm_watch(inotify_descriptor, watcher_descriptor);
     close(inotify_descriptor);
     cout << "[Box] Inotify thread finished properly" << endl;
+}
+
+void* Box::th_func_server_comm(Client client) {
+    cout << "[Box] Server Communication Thread" << endl;
+    commandPacket commandReceived;
+
+    while(!exit_command_typed) {
+        client.readLargePayloadFromSocket((char*)&commandReceived, sizeof(struct commandPacket));
+
+        instruction_source_is_server = true;
+
+        switch(commandReceived.command) {
+            case DELETE:{
+                auto filenameDeleted = commandReceived.additionalInfo;
+                stringstream filePathForDeletion;
+                filePathForDeletion << "./" << SYNC_DIR << "/" << filenameDeleted;
+                int remove_result = remove(filePathForDeletion.str().c_str());
+                if (remove_result == 0) {
+                    cout << "[Box] Received delete command from server - deleted file " << filenameDeleted << endl;
+                }
+                break;
+            }
+
+            case UPLOAD: {
+                auto filenameUploaded = commandReceived.additionalInfo;
+                stringstream filePathForUploadedFile;
+                filePathForUploadedFile << "./" << SYNC_DIR << "/" << filenameUploaded;
+
+                char fileSizeBuffer[sizeof(uint64_t)];
+                client.readDataFromSocket(fileSizeBuffer, sizeof(uint64_t));
+
+                uint64_t payloadSize = *(int *)fileSizeBuffer;
+                char payload[payloadSize];
+                client.readLargePayloadFromSocket(payload, payloadSize);
+
+                ofstream receivedFile(filePathForUploadedFile.str());
+                receivedFile.write(payload, payloadSize);
+                receivedFile.close();
+                break;
+            }
+        }
+
+        commandReceived.command = -1;
+        bzero(commandReceived.additionalInfo, 100);
+
+    }
+
+    cout << "[Box] Server Communication thread finished properly" << endl;
 }

@@ -33,6 +33,7 @@ public:
     int read_file(char* fileContent, std::string filePath);
     static void* th_func_monitor_console(Client client);
     static void* th_func_inotify(Client client);
+    static void* th_func_server_comm(Client client);
 };
 
 #endif //DROPBOX_BOX_H

@@ -27,6 +27,7 @@
 #include <sys/poll.h>
 #include <sys/stat.h>
 #include <sstream>
+#include <arpa/inet.h>
 
 
 using namespace std;

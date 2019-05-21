@@ -205,7 +205,7 @@ int Client::deleteFile(char *filename)
     sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
     waitForSocketAck();
 
-    cout << "[Client][Delete] Ack received! ";
+    //cout << "[Client][Delete] Ack received! ";
 
     return 0;
 }

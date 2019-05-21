@@ -88,8 +88,9 @@ void Instruction::reset(){
     for(int i = 0; i < 50; i ++){
         filename[i] = '\0';
         command_name[i] = '\0';
-        path[i] = '\0';
     }
+    for(int i = 0; i < 200; i++)
+        path[i] = '\0';
 }
 
 void Instruction::upload_file(Client client){

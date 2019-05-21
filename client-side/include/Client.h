@@ -45,13 +45,7 @@ private:
     filePacket prepareFilePacket(char *filename, int size, char *fileContent);
     int sendFilePacket(filePacket file_packet);
     int determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket);
-    int sendDataToSocket(void *data, size_t size);
-    int sendLargePayloadToSocket(char *data, size_t totalSize);
-    void waitForSocketAck();
 
-    int readDataFromSocket(char *buffer, size_t size);
-    int readLargePayloadFromSocket(char *buffer, size_t size);
-    int writeAckIntoSocket(const char *message);
 public:
     Client();
     ~Client() {};
@@ -65,6 +59,14 @@ public:
     int sendExitCommand();
     std::string name;
     bool isLogged;
+
+    int sendDataToSocket(void *data, size_t size);
+    int sendLargePayloadToSocket(char *data, size_t totalSize);
+    void waitForSocketAck();
+
+    int readDataFromSocket(char *buffer, size_t size);
+    int readLargePayloadFromSocket(char *buffer, size_t size);
+    int writeAckIntoSocket(const char *message);
 };
 
 #endif //DROPBOX_CLIENT_H

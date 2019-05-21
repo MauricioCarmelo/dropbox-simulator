@@ -10,7 +10,7 @@
 
 class Warehouse {
 public:
-    int run(int port);
+    int run(char* host, int port);
 };
 
 

@@ -19,7 +19,8 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    //serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_addr.s_addr = inet_addr(host);
     bzero(&(serv_addr.sin_zero), 8);
 
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
@@ -71,11 +72,15 @@ void* Server::uploadFileCommand(void *arg) {
 
     auto user_pointer = get_user(username);
     for(auto& device_index : user_pointer->devices) {
-        if (device_index.id != device) {
-            // enviar pra esse, no socket 3
-            auto s = device_index.socket3;
-            // SEND FILE
-
+        if (device_index.id != -1) {
+            int socketForServerComm = device_index.socket3;
+            commandPacket command;
+            command.command = UPLOAD;
+            command.packetType = CMD;
+            strcpy(command.additionalInfo, fileNameBuffer);
+            sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+            sendDataToSocket(socketForServerComm, &payloadSize, sizeof(payloadSize));
+            sendLargePayloadToSocket(socketForServerComm, payload, payloadSize);
         }
     }
 }
@@ -140,6 +145,14 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
         perror("Error deleting file");
     else
         cout << "[Instruction] File " << command.additionalInfo << "deleted succesfully" << endl;
+
+    auto user_pointer = get_user(userName);
+    for(auto& device_index : user_pointer->devices) {
+        if(device_index.id != -1) {
+            int socketForServerComm = device_index.socket3;
+            sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+        }
+    }
 
 }
 
@@ -214,8 +227,6 @@ void* Server::exitCommand(void *arg) {
     }
 }
 
-
-
 void* Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
 
@@ -254,6 +265,45 @@ void* Server::terminalThreadFunction(void *arg) {
         }
     }
 
+}
+
+void* Server::iNotifyThreadFunction(void *arg) {
+    std::cout << "inotify thread here" << std::endl;
+
+    commandPacket command;
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    int socket = userCurrentSocket->currentSocket;
+
+    int loopControl = 1;
+
+    while(loopControl) {
+        cout << "ready to receive command" << endl;
+        readLargePayloadFromSocket(socket, (char*)&command, sizeof(struct commandPacket));
+        writeAckIntoSocket(socket, "ack");
+
+        switch (command.command){
+            case UPLOAD:
+                uploadFileCommand(arg);
+                break;
+            case DOWNLOAD:
+                downloadFileCommand(arg, command);
+                break;
+            case DELETE:
+                deleteFileCommand(arg, command);
+                break;
+            case LIST_SERVER:
+                listServerCommand(arg);
+                break;
+            case EXIT:
+                sem_wait(&mutex_user_structure);
+                exitCommand(arg);
+                sem_post(&mutex_user_structure);
+                pthread_exit(arg);
+            default:
+                std::cout << "Command Invalid" << std::endl;
+                break;
+        }
+    }
 }
 
 int Server::writeAckIntoSocket(int socketId, const char *message) {
@@ -338,13 +388,7 @@ void Server::waitForSocketAck(int socketId) {
     }
 }
 
-
-
 void* Server::serverNotifyThreadFunction(void *arg) {
-
-}
-
-void* Server::iNotifyThreadFunction(void *arg) {
 
 }
 
@@ -431,12 +475,12 @@ void *Server::mediatorThread(void *arg) {
 
         if(connection.socketType== T2) {
             // inserir socket2 na estrutura de device do usuario
-            pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, arg);
+            pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, userCurrentSocket);
         }
 
         if(connection.socketType== T3) {
             // inserir socket3 na estrutura de device do usuario
-            pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg);
+            //pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg); does not need a thread for him, just need him available
         }
     } else {
         cout << "Expected CONN packet in mediator and received something else" << endl;
@@ -664,7 +708,6 @@ int number_of_users_logged()
     }
     return n;
 }
-
 
 Device* get_available_device(std::string name)
 {
