@@ -18,7 +18,8 @@ int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
-    serv_addr.sin_addr.s_addr = INADDR_ANY;
+    //serv_addr.sin_addr.s_addr = INADDR_ANY;
+    serv_addr.sin_addr.s_addr = inet_addr(host);
     bzero(&(serv_addr.sin_zero), 8);
 
     if (bind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr)) < 0)
