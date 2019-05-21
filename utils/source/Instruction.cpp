@@ -85,7 +85,7 @@ void Instruction::set_path(char path[]) {
 
 void Instruction::reset(){
     command_id = INVALID_COMMAND;
-    for(int i = 0; i < 50; i ++){
+    for(int i = 0; i < 200; i ++){
         filename[i] = '\0';
         command_name[i] = '\0';
         path[i] = '\0';
