@@ -74,12 +74,14 @@ int Box::open(char *host, int port) {
     }
 
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify, c2); // c2 prints ABORT
+    //thread th_inotify(th_func_inotify, c2); // c2 prints ABORT
+    thread th_server_comm(th_func_server_comm, c3);
 
     // criar a terceita thread aqui
 
     th_console.join();
-    th_inotify.join();
+    //th_inotify.join();
+    th_server_comm.join();
 
     std::cout << "TERMINOU" << std::endl;
 }
@@ -240,4 +242,49 @@ void* Box::th_func_inotify(Client client){
     inotify_rm_watch(inotify_descriptor, watcher_descriptor);
     close(inotify_descriptor);
     cout << "[Box] Inotify thread finished properly" << endl;
+}
+
+void* Box::th_func_server_comm(Client client) {
+    cout << "[Box] Server Communication Thread" << endl;
+    commandPacket commandReceived;
+
+    while(!exit_command_typed) {
+        client.readLargePayloadFromSocket((char*)&commandReceived, sizeof(struct commandPacket));
+
+        switch(commandReceived.command) {
+            case DELETE:{
+                auto filenameDeleted = commandReceived.additionalInfo;
+                stringstream filePathForDeletion;
+                filePathForDeletion << "./" << SYNC_DIR << "/" << filenameDeleted;
+                int remove_result = remove(filePathForDeletion.str().c_str());
+                if (remove_result == 0) {
+                    cout << "[Box] Received delete command from server - deleted file" << filenameDeleted << endl;
+                }
+                break;
+            }
+
+            case UPLOAD: {
+                auto filenameUploaded = commandReceived.additionalInfo;
+                stringstream filePathForUploadedFile;
+                filePathForUploadedFile << "./" << SYNC_DIR << "/" << filenameUploaded;
+
+                char fileSizeBuffer[sizeof(uint64_t)];
+                client.readDataFromSocket(fileSizeBuffer, sizeof(uint64_t));
+
+                uint64_t payloadSize = *(int *)fileSizeBuffer;
+                char payload[payloadSize];
+                client.readLargePayloadFromSocket(payload, payloadSize);
+
+                ofstream receivedFile(filePathForUploadedFile.str());
+                receivedFile.write(payload, payloadSize);
+                receivedFile.close();
+                break;
+            }
+        }
+        commandReceived.command = -1;
+        bzero(commandReceived.additionalInfo, 100);
+
+    }
+
+    cout << "[Box] Server Communication thread finished properly" << endl;
 }
