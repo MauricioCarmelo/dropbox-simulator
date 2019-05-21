@@ -4,11 +4,11 @@
 
 #include "../include/Warehouse.h"
 
-int Warehouse::run(int port) {
+int Warehouse::run(char* host, int port) {
 
     cout << "[Warehouse] Creating a new Server" << std::endl;
     Server newServer;
-    newServer.createSocket("127.0.0.1", port);
+    newServer.createSocket(host, port);
     newServer.run();
     //newServer.receive_file();
 
