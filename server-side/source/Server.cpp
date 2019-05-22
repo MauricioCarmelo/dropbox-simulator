@@ -217,6 +217,11 @@ void* Server::exitCommand(void *arg) {
     int socket = userCurrentSocket->currentSocket;
     int device = userCurrentSocket->currentDevice;
 
+    auto device_address = get_device(device, userName);
+    close(device_address->socket1);
+    close(device_address->socket2);
+    close(device_address->socket3);
+
     if (remove_device(userName, device) == SUCCESS) {
         if ( !is_device_connected(userName) ) {
             remove_user(userName);                  // remove user
@@ -332,7 +337,8 @@ int Server::readLargePayloadFromSocket(int socketId, char *buffer, size_t size) 
 
         bytesReadCurrentIteration = read(socketId, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
-            cout << "Error reading current buffer in socket - should retry this part" << endl;
+            //cout << "Error reading current buffer in socket - should retry this part" << endl;
+            pthread_exit(buffer);
         }
 
         memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
@@ -486,8 +492,6 @@ void *Server::mediatorThread(void *arg) {
         cout << "Expected CONN packet in mediator and received something else" << endl;
         pthread_exit(arg);
     }
-//    pthread_join(thread, NULL);
-//    pthread_exit(arg);
 }
 
 int Server::run() {
@@ -496,27 +500,9 @@ int Server::run() {
     initiate_user_controller_structure();
 
     sem_init(&mutex_user_structure, 0, 1);
-    //sem_init(&semaphore_allocate_connection, 0, 2);
-
     int socket_address;
 
-    /*while ( (socket_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) != 0 ) {
 
-        if (socket_address == -1){
-            std::cout << "[Server] ERROR on accept" << endl;
-        }
-        else{
-            int *newsockfd_address;
-            newsockfd_address = (int*)malloc(sizeof(int));
-
-            sem_wait(&semaphore_allocate_connection);
-            if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
-                std::cout << "[Server] Failed to create thread" << endl;
-            sem_post(&semaphore_allocate_connection);
-        }
-    }*/
-
-    //while (i<50) {
     while (true) {
         int *newsockfd_address;
         newsockfd_address = (int*)malloc(sizeof(int));
@@ -528,9 +514,6 @@ int Server::run() {
         if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
             std::cout << "[Server] Failed to create thread" << endl;
 
-        //sem_post(&semaphore_allocate_connection);
-
-        //i++;
     }
 }
 
