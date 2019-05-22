@@ -210,6 +210,61 @@ void* Server::listServerCommand(void *arg) {
 
 }
 
+void* Server::getSyncDirCommand(void *arg) {
+
+    cout << "[Server][Get Sync Dir] Started" << endl;
+
+    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
+    string userName = userCurrentSocket->userName;
+    int socket = userCurrentSocket->currentSocket;
+
+    stringstream filepath;
+    filepath << "./database/" << userName;
+    string filepathstring = filepath.str();
+    stringstream dataInStringStream;
+
+    DIR *dir;
+    struct dirent *ent;
+    int numberOfFiles = 0;
+    if ((dir = opendir (filepathstring.c_str())) != NULL) {
+        while ((ent = readdir (dir)) != NULL) {
+            if(strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0){
+                struct stat file_status;
+                if(stat(filepathstring.c_str(), &file_status) == 0){
+                    numberOfFiles++;
+                }
+            }
+        }
+        closedir (dir);
+
+        cout << "[Get Sync Dir] Sending data" << endl;
+
+        sendDataToSocket(socket, &numberOfFiles, sizeof(int));
+        waitForSocketAck(socket);
+
+    } else {
+        /* could not open directory */
+        cout << "[Get Sync Dir] Could not open directory";
+    }
+
+    if ((dir = opendir (filepathstring.c_str())) != NULL) {
+        while ((ent = readdir(dir)) != NULL) {
+            if (strcmp(ent->d_name, ".") != 0 && strcmp(ent->d_name, "..") != 0) {
+                struct stat file_status;
+                if (stat(filepathstring.c_str(), &file_status) == 0) {
+                    commandPacket currentFileName;
+                    strcpy(currentFileName.additionalInfo, ent->d_name);
+                    sendDataToSocket(socket, &currentFileName, sizeof(commandPacket));
+                    waitForSocketAck(socket);
+                    downloadFileCommand( arg, currentFileName);
+                }
+            }
+        }
+        closedir(dir);
+    }
+
+}
+
 void* Server::exitCommand(void *arg) {
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
     string userName = userCurrentSocket->userName;
@@ -252,6 +307,9 @@ void* Server::terminalThreadFunction(void *arg) {
                 break;
             case LIST_SERVER:
                 listServerCommand(arg);
+                break;
+            case GET_SYNC_DIR:
+                getSyncDirCommand(arg);
                 break;
             case EXIT:
                 sem_wait(&mutex_user_structure);

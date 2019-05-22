@@ -214,8 +214,9 @@ void Instruction::list_client(){
     }
 }
 
-void Instruction::get_sync_dir(){
+void Instruction::get_sync_dir(Client client){
     cout << "[Instruction] Get sync dir function called..." << endl;
+    client.get_sync_dir();
 }
 
 void Instruction::exit(Client client){

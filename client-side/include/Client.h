@@ -54,6 +54,7 @@ public:
     int sendFile(char *filename, int size, char *fileContent);
     int deleteFile(char* filename);
     int list_server();
+    int get_sync_dir();
     int downloadFile(char *filename);
     int establishConnectionType(connection_t c);
     int sendExitCommand();

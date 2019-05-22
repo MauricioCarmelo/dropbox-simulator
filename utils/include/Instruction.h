@@ -45,7 +45,7 @@ public:
     void delete_file(Client client);
     void list_server(Client client);
     void list_client();
-    void get_sync_dir();
+    void get_sync_dir(Client client);
     void exit(Client client);
 };
 

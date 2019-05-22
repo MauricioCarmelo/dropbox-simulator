@@ -133,7 +133,7 @@ void* Box::th_func_monitor_console(Client client){
                 break;
 
             case GET_SYNC_DIR:
-                instruction.get_sync_dir();
+                instruction.get_sync_dir(client);
                 break;
 
             case EXIT:

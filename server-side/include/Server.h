@@ -115,6 +115,7 @@ public:
     static void *deleteFileCommand(void *arg, commandPacket commandPacket);
     static void *downloadFileCommand(void *arg, commandPacket commandPacket);
     static void *listServerCommand(void *arg);
+    static void *getSyncDirCommand(void *arg);
     static void *exitCommand(void *arg);
 /*
     void sync_server();                 //TODO Syncs server with directory "sync_dir_<nomeusuário>" and client

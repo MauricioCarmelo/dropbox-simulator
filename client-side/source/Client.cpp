@@ -281,3 +281,51 @@ int Client::list_server() {
     return 0;
 }
 
+int Client::get_sync_dir() {
+    commandPacket command_packet;
+    command_packet.packetType = CMD;
+    command_packet.command = GET_SYNC_DIR;
+
+    cout << "[Client][Get Sync Dir] Started" << endl;
+    sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
+    waitForSocketAck();
+
+    int size;
+    char intSizeBuffer[sizeof(int)];
+    readDataFromSocket(intSizeBuffer, sizeof(int));
+    writeAckIntoSocket("ack");
+
+    size = *(int *)intSizeBuffer;
+
+    cout << "[Client][Get Sync Dir] Finished " << size << endl;
+
+    while (size > 0 ) {
+
+        cout << "[Client][Get Sync Dir] Loop: " << size << endl;
+
+        commandPacket command;
+        readLargePayloadFromSocket( (char*)&command, sizeof(struct commandPacket));
+        writeAckIntoSocket("ack");
+
+        char fileSizeBuffer[sizeof(long)];
+        readDataFromSocket(fileSizeBuffer, sizeof(long));
+        writeAckIntoSocket("ack");
+        long payloadSize = *(long *)fileSizeBuffer;
+        char payload[payloadSize];
+        readLargePayloadFromSocket(payload, payloadSize);
+        writeAckIntoSocket("ack");
+
+        stringstream pathStream;
+        pathStream << "./sync_dir/" << command.additionalInfo;
+        string path = pathStream.str();
+        ofstream offFile(path);
+        offFile.write(payload, payloadSize);
+        offFile.close();
+
+        cout << "[Client][Download] File received! ";
+        size--;
+    }
+
+    return 0;
+}
+
