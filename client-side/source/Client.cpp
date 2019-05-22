@@ -144,7 +144,8 @@ int Client::readLargePayloadFromSocket(char *buffer, size_t size) {
 
         bytesReadCurrentIteration = read(sockfd, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
-            cout << "Error reading current buffer in socket - should retry this part" << endl;
+            //cout << "Error reading current buffer in socket - should retry this part" << endl;
+            break;
         }
 
         memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
@@ -255,28 +256,30 @@ int Client::list_server() {
     command_packet.packetType = CMD;
     command_packet.command = LIST_SERVER;
 
-    cout << "[Client][List server] Started" << endl;
+    //cout << "[Client][List server] Started" << endl;
     sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
     waitForSocketAck();
 
-    cout << "[Client][List server] Ack received! " << endl;
-
-    char stringSizeBuffer[sizeof(long)];
+    /*char stringSizeBuffer[sizeof(long)];
     readDataFromSocket(stringSizeBuffer, sizeof(long));
+    writeAckIntoSocket("ack");
     long payloadSize = *(long *)stringSizeBuffer;
 
     if(payloadSize <= 0){
         cout << "[Client][List Server] Error: There are no files in the server" << endl;
     }
+    else if(payloadSize > 20000){
+        cout << "[Client][List Server] Error: Could not read properly" << endl;
+    }
     else{
-        writeAckIntoSocket("ack");
+        //writeAckIntoSocket("ack");
 
         char payload[payloadSize];
         readLargePayloadFromSocket(payload, payloadSize);
         writeAckIntoSocket("ack");
 
         cout << "[Client][List Server] List Server Command: " << endl << payload << endl;
-    }
+    }*/
 
     return 0;
 }

@@ -195,14 +195,15 @@ void* Server::listServerCommand(void *arg) {
         }
         closedir (dir);
         string dataInString = dataInStringStream.str();
+        cout << dataInString << endl;
 
-        long lenght = dataInString.length();
+        /*long lenght = dataInString.length();
 
         sendDataToSocket(socket, &lenght, sizeof(long));
         waitForSocketAck(socket);
 
         sendLargePayloadToSocket(socket, const_cast<char *>(dataInString.c_str()), dataInString.length());
-        waitForSocketAck(socket);
+        waitForSocketAck(socket);*/
     } else {
         /* could not open directory */
         cout << "[List Server] Could not open directory";
@@ -215,6 +216,11 @@ void* Server::exitCommand(void *arg) {
     string userName = userCurrentSocket->userName;
     int socket = userCurrentSocket->currentSocket;
     int device = userCurrentSocket->currentDevice;
+
+    auto device_address = get_device(device, userName);
+    close(device_address->socket1);
+    close(device_address->socket2);
+    close(device_address->socket3);
 
     if (remove_device(userName, device) == SUCCESS) {
         if ( !is_device_connected(userName) ) {
@@ -331,7 +337,8 @@ int Server::readLargePayloadFromSocket(int socketId, char *buffer, size_t size) 
 
         bytesReadCurrentIteration = read(socketId, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
-            cout << "Error reading current buffer in socket - should retry this part" << endl;
+            //cout << "Error reading current buffer in socket - should retry this part" << endl;
+            pthread_exit(buffer);
         }
 
         memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
@@ -493,20 +500,20 @@ int Server::run() {
     initiate_user_controller_structure();
 
     sem_init(&mutex_user_structure, 0, 1);
-    //sem_init(&semaphore_update_other_devices, 0, 0);
-    //sem_init(&semaphore_devices_updated, 0, 0);
+    int socket_address;
 
-    while (i<50){
+
+    while (true) {
         int *newsockfd_address;
         newsockfd_address = (int*)malloc(sizeof(int));
 
+        //sem_wait(&semaphore_allocate_connection);   // nao permite que o server estabeca mais conexoes
         if ((*newsockfd_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
             std::cout << "[Server] ERROR on accept" << endl;
 
         if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
             std::cout << "[Server] Failed to create thread" << endl;
 
-        i++;
     }
 }
 
