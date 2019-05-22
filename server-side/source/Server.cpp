@@ -197,14 +197,13 @@ void* Server::listServerCommand(void *arg) {
         string dataInString = dataInStringStream.str();
         cout << dataInString << endl;
 
-        long lenght = dataInString.length();
-        cout << "tamanho: " << lenght << ", "<< &lenght << endl;
+        /*long lenght = dataInString.length();
 
         sendDataToSocket(socket, &lenght, sizeof(long));
         waitForSocketAck(socket);
 
         sendLargePayloadToSocket(socket, const_cast<char *>(dataInString.c_str()), dataInString.length());
-        waitForSocketAck(socket);
+        waitForSocketAck(socket);*/
     } else {
         /* could not open directory */
         cout << "[List Server] Could not open directory";
