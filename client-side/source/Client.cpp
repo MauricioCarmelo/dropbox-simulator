@@ -105,7 +105,7 @@ int Client::sendFilePacket(filePacket file_packet)
     sendDataToSocket(file_packet.fileName, strlen(file_packet.fileName));
     waitForSocketAck();
     sendLargePayloadToSocket(file_packet.payload, file_packet.fileSize);
-    waitForSocketAck();
+    //waitForSocketAck();
 
     return 0;
 }
