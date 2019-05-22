@@ -133,6 +133,13 @@ int Client::readDataFromSocket(char *buffer, size_t size) {
     }
 }
 
+/*int Client::readSizeFromSocket(long *length, int size) {
+    int bytesRead = read(sockfd, length, size);
+    if (bytesRead == -1) {
+        cout << "readDataFromSocket: Failed to receive data" << endl;
+    }
+}*/
+
 int Client::readLargePayloadFromSocket(char *buffer, size_t size) {
     char smallerBuffer[BUFFER_SIZE];
     int bytesReadFromSocket = 0;
@@ -263,7 +270,11 @@ int Client::list_server() {
     //cout << "[Client][List server] Ack received! " << endl;
 
     char stringSizeBuffer[sizeof(long)];
+    bzero(stringSizeBuffer, sizeof(long));
     readDataFromSocket(stringSizeBuffer, sizeof(long));
+
+    read(sockfd, stringSizeBuffer, sizeof(long));
+
     writeAckIntoSocket("ack");
     long payloadSize = *(long *)stringSizeBuffer;
     cout << "opa1: " << stringSizeBuffer << endl;

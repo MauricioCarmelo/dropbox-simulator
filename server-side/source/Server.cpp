@@ -139,17 +139,22 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
 
     string filepathstring = filepath.str();
 
-    int remove_result = remove(filepathstring.c_str());
-    if(remove_result != 0)
-        perror("Error deleting file");
-    else
-        cout << "[Instruction] File " << command.additionalInfo << "deleted succesfully" << endl;
+    ifstream file(filepathstring.c_str());
 
-    auto user_pointer = get_user(userName);
-    for(auto& device_index : user_pointer->devices) {
-        if(device_index.id != -1) {
-            int socketForServerComm = device_index.socket3;
-            sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+    if (file){
+        int remove_result = remove(filepathstring.c_str());
+
+        if(remove_result != 0)
+            perror("Error deleting file");
+        else
+            cout << "[Instruction] File " << command.additionalInfo << "deleted succesfully" << endl;
+
+        auto user_pointer = get_user(userName);
+        for(auto& device_index : user_pointer->devices) {
+            if(device_index.id != -1) {
+                int socketForServerComm = device_index.socket3;
+                sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+            }
         }
     }
 
@@ -200,7 +205,8 @@ void* Server::listServerCommand(void *arg) {
         long lenght = dataInString.length();
         cout << "tamanho: " << lenght << ", "<< &lenght << endl;
 
-        sendDataToSocket(socket, &lenght, sizeof(long));
+        //sendDataToSocket(socket, &lenght, sizeof(long));
+        write(socket, &lenght, sizeof(long));
         waitForSocketAck(socket);
 
         sendLargePayloadToSocket(socket, const_cast<char *>(dataInString.c_str()), dataInString.length());
@@ -209,7 +215,6 @@ void* Server::listServerCommand(void *arg) {
         /* could not open directory */
         cout << "[List Server] Could not open directory";
     }
-
 }
 
 void* Server::exitCommand(void *arg) {
