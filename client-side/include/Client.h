@@ -39,7 +39,7 @@ typedef struct connection{
 
 class Client {
 private:
-    int sockfd;
+
     struct sockaddr_in serv_addr;
     struct hostent *server;
     filePacket prepareFilePacket(char *filename, int size, char *fileContent);
@@ -49,6 +49,7 @@ private:
 public:
     Client();
     ~Client() {};
+    int sockfd;
     Client(char *host, int port);
     int establishConnectionToHost();
     int sendFile(char *filename, int size, char *fileContent);

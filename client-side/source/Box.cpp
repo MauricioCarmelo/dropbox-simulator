@@ -97,8 +97,11 @@ bool Box::createSyncDir() {
     return false;
 }
 
+//void* Box::th_func_monitor_console(void *args){
 void* Box::th_func_monitor_console(Client client){
     cout << "[Box] Monitor console thread" << endl;
+
+    //Client *cliente = (Client*)args;
 
     char line[200];
     line[0] = 'a'; // avoid closing application when pressing enter only
@@ -296,7 +299,6 @@ void* Box::th_func_server_comm(Client client) {
 
         commandReceived.command = -1;
         bzero(commandReceived.additionalInfo, 100);
-
     }
 
     cout << "[Box] Server Communication thread finished properly" << endl;

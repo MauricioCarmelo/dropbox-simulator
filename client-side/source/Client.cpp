@@ -144,7 +144,8 @@ int Client::readLargePayloadFromSocket(char *buffer, size_t size) {
 
         bytesReadCurrentIteration = read(sockfd, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
-            cout << "Error reading current buffer in socket - should retry this part" << endl;
+            //cout << "Error reading current buffer in socket - should retry this part" << endl;
+            break;
         }
 
         memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
