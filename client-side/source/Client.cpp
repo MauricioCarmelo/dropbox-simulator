@@ -259,20 +259,27 @@ int Client::list_server() {
     sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
     waitForSocketAck();
 
-    cout << "[Client][List server] Ack received! " << endl;
+    //cout << "[Client][List server] Ack received! " << endl;
 
     char stringSizeBuffer[sizeof(long)];
     readDataFromSocket(stringSizeBuffer, sizeof(long));
+    writeAckIntoSocket("ack");
     long payloadSize = *(long *)stringSizeBuffer;
+    cout << "opa1: " << stringSizeBuffer << endl;
+    cout << "opa2: " << payloadSize << endl;
 
     if(payloadSize <= 0){
         cout << "[Client][List Server] Error: There are no files in the server" << endl;
     }
+    else if(payloadSize > 20000){
+        cout << "[Client][List Server] Error: Something went wrong" << endl;
+    }
     else{
-        writeAckIntoSocket("ack");
+        //writeAckIntoSocket("ack");
 
         char payload[payloadSize];
         readLargePayloadFromSocket(payload, payloadSize);
+        cout << "opa3: " << payload << endl;
         writeAckIntoSocket("ack");
 
         cout << "[Client][List Server] List Server Command: " << endl << payload << endl;

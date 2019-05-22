@@ -195,8 +195,10 @@ void* Server::listServerCommand(void *arg) {
         }
         closedir (dir);
         string dataInString = dataInStringStream.str();
+        cout << dataInString << endl;
 
         long lenght = dataInString.length();
+        cout << "tamanho: " << lenght << ", "<< &lenght << endl;
 
         sendDataToSocket(socket, &lenght, sizeof(long));
         waitForSocketAck(socket);
@@ -331,7 +333,7 @@ int Server::readLargePayloadFromSocket(int socketId, char *buffer, size_t size) 
 
         bytesReadCurrentIteration = read(socketId, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
-            cout << "Error reading current buffer in socket - should retry this part" << endl;
+            //cout << "Error reading current buffer in socket - should retry this part" << endl;
         }
 
         memcpy(buffer + bytesReadFromSocket, smallerBuffer, bufferSize);
