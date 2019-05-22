@@ -1,10 +1,8 @@
-
 #ifndef DROPBOX_CLIENT_H
 #define DROPBOX_CLIENT_H
 
 #include "../../utils/include/masterInclude.h"
 #include "../../utils/include/Instruction.h"
-
 
 #define BUFFER_SIZE 4
 #define CMD 1
@@ -14,6 +12,7 @@
 #define T1 1
 #define T2 2
 #define T3 3
+
 using namespace std;
 
 typedef struct filePacket{
@@ -33,13 +32,12 @@ typedef struct connection{
     uint64_t packetType;
     uint64_t socketType;
     int device;
-    char username[100]; // mudar pra char[]
-    // mandar o id do device
+    char username[100];
 } connection_t;
 
 class Client {
-private:
 
+private:
     struct sockaddr_in serv_addr;
     struct hostent *server;
     filePacket prepareFilePacket(char *filename, int size, char *fileContent);
@@ -60,11 +58,9 @@ public:
     int sendExitCommand();
     std::string name;
     bool isLogged;
-
     int sendDataToSocket(void *data, size_t size);
     int sendLargePayloadToSocket(char *data, size_t totalSize);
     void waitForSocketAck();
-
     int readDataFromSocket(char *buffer, size_t size);
     int readLargePayloadFromSocket(char *buffer, size_t size);
     int writeAckIntoSocket(const char *message);

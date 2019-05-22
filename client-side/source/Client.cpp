@@ -3,7 +3,6 @@
 
 Client::Client() {}
 
-
 Client::Client(char *host, int port)
 {
     server = gethostbyname(host);
@@ -51,7 +50,6 @@ int Client::establishConnectionType(connection_t connection)
         return -1;
     else if (strcmp(response, "nack5") == 0) // user inserted but error while inserting device
         return -1;
-    //n = write(sockfd, buffer, 7);
 
     return 0;
 }
@@ -144,7 +142,6 @@ int Client::readLargePayloadFromSocket(char *buffer, size_t size) {
 
         bytesReadCurrentIteration = read(sockfd, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
-            //cout << "Error reading current buffer in socket - should retry this part" << endl;
             break;
         }
 
@@ -200,13 +197,10 @@ int Client::deleteFile(char *filename)
     command_packet.command = DELETE;
     strcpy(command_packet.additionalInfo, filename);
 
-
     cout << "[Client][Delete] Sending packet for deletion: " << command_packet.additionalInfo << endl;
 
     sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
     waitForSocketAck();
-
-    //cout << "[Client][Delete] Ack received! ";
 
     return 0;
 }
@@ -216,7 +210,6 @@ int Client::downloadFile(char *filename) {
     command_packet.packetType = CMD;
     command_packet.command = DOWNLOAD;
     strcpy(command_packet.additionalInfo, filename);
-
 
     cout << "[Client][Download] Sending packet to ask for file: " << command_packet.additionalInfo << endl;
 
@@ -256,31 +249,8 @@ int Client::list_server() {
     command_packet.packetType = CMD;
     command_packet.command = LIST_SERVER;
 
-    //cout << "[Client][List server] Started" << endl;
     sendLargePayloadToSocket((char*)&command_packet, sizeof(struct commandPacket));
     waitForSocketAck();
 
-    /*char stringSizeBuffer[sizeof(long)];
-    readDataFromSocket(stringSizeBuffer, sizeof(long));
-    writeAckIntoSocket("ack");
-    long payloadSize = *(long *)stringSizeBuffer;
-
-    if(payloadSize <= 0){
-        cout << "[Client][List Server] Error: There are no files in the server" << endl;
-    }
-    else if(payloadSize > 20000){
-        cout << "[Client][List Server] Error: Could not read properly" << endl;
-    }
-    else{
-        //writeAckIntoSocket("ack");
-
-        char payload[payloadSize];
-        readLargePayloadFromSocket(payload, payloadSize);
-        writeAckIntoSocket("ack");
-
-        cout << "[Client][List Server] List Server Command: " << endl << payload << endl;
-    }*/
-
     return 0;
 }
-

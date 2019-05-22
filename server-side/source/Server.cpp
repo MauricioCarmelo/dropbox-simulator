@@ -1,24 +1,17 @@
-//
-// Created by vagrant on 4/20/19.
-//
-
 #include "../include/Server.h"
-#include <cstring>
-#include <sys/stat.h>
 
 User users[MAX_USERS];
 sem_t mutex_user_structure;
 
 Server::Server() = default;
 
-int Server::createSocket(char* host, int port) { //TODO host nao é usado aqui
+int Server::createSocket(char* host, int port) {
 
     if ((sockfd = socket(AF_INET, SOCK_STREAM, 0)) == -1)
         cout << "[Server] ERROR opening socket" << endl;
 
     serv_addr.sin_family = AF_INET;
     serv_addr.sin_port = htons(port);
-    //serv_addr.sin_addr.s_addr = INADDR_ANY;
     serv_addr.sin_addr.s_addr = inet_addr(host);
     bzero(&(serv_addr.sin_zero), 8);
 
@@ -67,7 +60,6 @@ void* Server::uploadFileCommand(void *arg) {
     offFile.write(payload, payloadSize);
     offFile.close();
     cout << " [SERVER] Arquivo copiado no path:" << completePath << endl;
-
 
     auto user_pointer = get_user(username);
     for(auto& device_index : user_pointer->devices) {
@@ -125,7 +117,6 @@ void* Server::downloadFileCommand(void *arg, commandPacket command) {
         char* not_downloaded_message = (char*)malloc(sizeof("ndown"));
         sendDataToSocket(socket, not_downloaded_message, sizeof("ndown"));
     }
-
 }
 
 void* Server::deleteFileCommand(void *arg, commandPacket command) {
@@ -152,7 +143,6 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
             sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
         }
     }
-
 }
 
 void* Server::listServerCommand(void *arg) {
@@ -189,26 +179,18 @@ void* Server::listServerCommand(void *arg) {
 
                     format_from_timespec_to_string(formatted_time, changed_time);
                     dataInStringStream << "\tChange time: " << formatted_time << "\n";
-
                 }
             }
         }
+
         closedir (dir);
         string dataInString = dataInStringStream.str();
         cout << dataInString << endl;
 
-        /*long lenght = dataInString.length();
-
-        sendDataToSocket(socket, &lenght, sizeof(long));
-        waitForSocketAck(socket);
-
-        sendLargePayloadToSocket(socket, const_cast<char *>(dataInString.c_str()), dataInString.length());
-        waitForSocketAck(socket);*/
     } else {
         /* could not open directory */
         cout << "[List Server] Could not open directory";
     }
-
 }
 
 void* Server::exitCommand(void *arg) {
@@ -224,7 +206,7 @@ void* Server::exitCommand(void *arg) {
 
     if (remove_device(userName, device) == SUCCESS) {
         if ( !is_device_connected(userName) ) {
-            remove_user(userName);                  // remove user
+            remove_user(userName);
         }
     }
     else{
@@ -269,7 +251,6 @@ void* Server::terminalThreadFunction(void *arg) {
                 break;
         }
     }
-
 }
 
 void* Server::iNotifyThreadFunction(void *arg) {
@@ -337,7 +318,6 @@ int Server::readLargePayloadFromSocket(int socketId, char *buffer, size_t size) 
 
         bytesReadCurrentIteration = read(socketId, smallerBuffer, bufferSize);
         if (bufferSize != bytesReadCurrentIteration) {
-            //cout << "Error reading current buffer in socket - should retry this part" << endl;
             pthread_exit(buffer);
         }
 
@@ -471,21 +451,18 @@ void *Server::mediatorThread(void *arg) {
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)malloc(sizeof(UserCurrentSocket));
     userCurrentSocket->userName = connection.username;
     userCurrentSocket->currentDevice = connection.device;
-    userCurrentSocket->currentSocket = socket; //test before conversion
+    userCurrentSocket->currentSocket = socket;
 
     if (connection.packetType == CONN) {
         if(connection.socketType== T1) {
-            // inserir socket1 na estrutura de device do usuario
             pthread_create(&thread, NULL, &Server::terminalThreadFunction, userCurrentSocket);
         }
 
         if(connection.socketType== T2) {
-            // inserir socket2 na estrutura de device do usuario
             pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, userCurrentSocket);
         }
 
         if(connection.socketType== T3) {
-            // inserir socket3 na estrutura de device do usuario
             //pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg); does not need a thread for him, just need him available
         }
     } else {
@@ -500,20 +477,16 @@ int Server::run() {
     initiate_user_controller_structure();
 
     sem_init(&mutex_user_structure, 0, 1);
-    int socket_address;
-
 
     while (true) {
         int *newsockfd_address;
         newsockfd_address = (int*)malloc(sizeof(int));
 
-        //sem_wait(&semaphore_allocate_connection);   // nao permite que o server estabeca mais conexoes
         if ((*newsockfd_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
             std::cout << "[Server] ERROR on accept" << endl;
 
         if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
             std::cout << "[Server] Failed to create thread" << endl;
-
     }
 }
 
@@ -526,12 +499,11 @@ void Server::createUserDirectory(const char *user) {
 
     if (stat(diretorio, &st) != 0) {
         mkdir(diretorio, 07777);
-        cout << "[Server] User: " << user << "has now a client folder" << endl;
+        cout << "[Server] User: " << user << " has now a client folder" << endl;
     }
     else {
-        cout << "[Server] User " << "already has a folder" << endl;
+        cout << "[Server] User " << user << " already has a folder" << endl;
     }
-
 }
 
 int insert_user(std::string name)
@@ -561,7 +533,7 @@ int remove_user(std::string name)
     for(auto &user : users){
         if (user.name == name) {
             if (is_device_connected(name)){
-                std::cout << "canot remove user, device still connected" << std::endl;
+                std::cout << "cannot remove user, device still connected" << std::endl;
                 return ERROR;
             }
             user.name = "";
@@ -614,7 +586,7 @@ int insert_device(std::string name, int device_id)
         return MAX_DEVICES_REACHED;
     }
 
-    device->id = device_id;      // insert device
+    device->id = device_id;
     return SUCCESS;
 }
 
@@ -641,7 +613,7 @@ int remove_device(std::string name, int device_id)
 
 Device *get_device(int device_id, std::string name)
 {
-    if (name != "") {               // search device for an specific user
+    if (name != "") {
         auto user = get_user(name);
         if (user == nullptr) {
             std::cout << "user not found" << std::endl;
@@ -654,15 +626,6 @@ Device *get_device(int device_id, std::string name)
         }
         return nullptr;
     }
-    /*else  {                         // search device in the whole structure
-        for (auto &user : users) {
-            for (auto &device : user.devices) {
-                if (device.id == device_id)
-                    return &device;
-            }
-        }
-        return nullptr;
-    }*/
 }
 
 int number_of_devices(std::string name) {
@@ -729,7 +692,6 @@ int insert_socket(std::string name, int device_id, int socket_descriptor, int so
             std::cout << "socket type not defined" << std::endl;
             break;
     }
-
 }
 
 int initiate_user_controller_structure()
@@ -748,7 +710,6 @@ int initiate_user_controller_structure()
     return 0;
 }
 
-// test
 void print_user_structure()
 {
     for (auto user : users)
@@ -764,20 +725,4 @@ void print_user_structure()
         std::cout << std::endl;
     }
 }
-
-
-
-/*
-void Server::sync_server() {
-
-}
-
-
-void Server::send_file(File file, int socket) {
-
-}
-*/
-
-
-
 

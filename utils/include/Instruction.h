@@ -1,7 +1,6 @@
 #ifndef DROPBOX_INSTRUCTION_H
 #define DROPBOX_INSTRUCTION_H
 
-
 #include "../../client-side/include/Client.h"
 #include "Utility.h"
 #include "../../utils/include/masterInclude.h"
@@ -23,7 +22,9 @@ typedef struct file_t{
     char name[100];
     char* content;
 } file_t;
+
 class Client;
+
 class Instruction{
 
 private:

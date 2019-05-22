@@ -1,7 +1,3 @@
-//
-// Created by root on 20/04/19.
-//
-
 #ifndef DROPBOX_FILEMANAGER_H
 #define DROPBOX_FILEMANAGER_H
 
