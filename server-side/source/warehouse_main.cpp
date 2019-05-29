@@ -3,7 +3,6 @@
 #include "../include/Server.h"
 #include "../include/Warehouse.h"
 
-
 int main(int argc, char *argv[]) {
 
     if (argc < 2) {

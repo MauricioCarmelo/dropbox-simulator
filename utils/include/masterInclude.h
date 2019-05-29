@@ -1,10 +1,5 @@
-//
-// Created by vagrant on 5/11/19.
-//
-
 #ifndef DROPBOX_MASTERINCLUDE_H
 #define DROPBOX_MASTERINCLUDE_H
-
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -22,16 +17,15 @@
 #include <thread>
 #include <vector>
 #include <pthread.h>
-#include <iostream>
 #include <dirent.h>
 #include <sys/poll.h>
 #include <sys/stat.h>
 #include <sstream>
 #include <arpa/inet.h>
-
+#include <string>
+#include <semaphore.h>
 
 using namespace std;
-
 
 #endif //DROPBOX_MASTERINCLUDE_H
 

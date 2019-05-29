@@ -114,8 +114,6 @@ void Instruction::upload_file(Client client){
 
         if(file_read){
             cout << "[Instruction] Whole file read successfully, " << length << " bytes read" << endl;
-            //cout << "File content: " << fileContent << endl;
-
             client.sendFile(filename, length, fileContent);
         }
         else
@@ -135,41 +133,18 @@ void Instruction::download_file(Client client){
     cout << "Download function called..." << endl;
 
     client.downloadFile(filename);
-
-    /*
-    // fileContent será recebido do servidor (por parâmetro?)
-    // então essas linhas não serão necessárias
-    char str[] = "[Instruction] esse é um exemplo de conteúdo do arquivo recebido do servidor.";
-    char* fileContent = (char*)malloc(sizeof(str));
-    strcpy(fileContent, str);
-
-    // filepath setado para o cmake-build-debug pois é lá que está o executável => mudar no futuro
-    char* filepath = (char*)malloc(sizeof("../cmake-build-debug/") + sizeof(filename));
-    strcpy(filepath, "../cmake-build-debug/");
-    strcat(filepath, filename);
-
-    ofstream file(filepath);
-    file.write(fileContent, strlen(fileContent));
-    file.close();
-
-    delete[] fileContent;
-    delete[] filepath;*/
-
-    //cout << "[Instruction] Arquivo " << filename << " baixado do servidor" << endl;
 }
 
 void Instruction::delete_file(Client client){
     cout << "[Instruction] Delete function called..." << endl;
 
     client.deleteFile(filename);
-
 }
 
 void Instruction::list_server(Client client){
     cout << "[Instruction] List server function called..." << endl;
 
     client.list_server();
-
 }
 
 void Instruction::list_client(){
@@ -204,8 +179,6 @@ void Instruction::list_client(){
 
                     format_from_timespec_to_string(formatted_time, changed_time);
                     cout << "\tChange time: " << formatted_time << endl;
-
-                    //cout << ent->d_name << ", " << ctime(&time_without_millisec); // alternative (prints Tue May 14 14:12:08 2019)
 
                     delete[] formatted_time;
                 }

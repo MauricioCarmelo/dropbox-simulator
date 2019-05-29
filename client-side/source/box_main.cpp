@@ -3,9 +3,6 @@
 #include "../include/Box.h"
 #include "../../utils/include/Utility.h"
 
-
-
-
 using namespace std;
 
 char username[USERNAME_SIZE];
@@ -24,20 +21,14 @@ int main(int argc, char *argv[]) {
     strcpy(host, argv[2]);
     int port = atoi(argv[3]);
 
-    /*thread th_monitor_console(waitForUserCommand);
-    thread th_inotify(inotify_watcher);*/
-
     Box box;
-    box.set_username(username);         // this is required
+    box.set_username(username);
     char userFolder[FOLDER_SIZE];
     strcpy(userFolder, "./");
     strcat(userFolder, SYNC_DIR);
-    //strcat(userFolder, "_");
-    //strcat(userFolder, username);
+
     box.setUserFolder(userFolder);
     box.open(host, port);
-    /*th_monitor_console.join();
-    th_inotify.join();*/
 
     return 0;
 }

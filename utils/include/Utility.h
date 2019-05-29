@@ -1,7 +1,6 @@
 #ifndef DROPBOX_UTILITY_H
 #define DROPBOX_UTILITY_H
 
-
 #include "Instruction.h"
 #include "../../utils/include/masterInclude.h"
 
@@ -11,9 +10,6 @@
 #define FILE_NAME_LENGHT 32
 #define MONITOR_SINGLE_EVENT_SIZE (sizeof(struct inotify_event))
 #define BUFFER_LENGHT MAX_EVENT_MONITOR * (MONITOR_SINGLE_EVENT_SIZE + FILE_NAME_LENGHT)
-
-void waitForUserCommand();
-void inotify_watcher();
 
 // Exemplo:
 //  unsigned char* buffer;

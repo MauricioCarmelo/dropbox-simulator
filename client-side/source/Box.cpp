@@ -23,12 +23,6 @@ void Box::setUserFolder(char *dir) {
 }
 
 int Box::open(char *host, int port) {
-
-    //thread th_console(th_func_monitor_console, c1);
-    //thread th_inotify(th_func_inotify);
-
-    //client = Client(host, port);
-    //client.establishConnectionToHost();
     createSyncDir();
     srand(time(0));
 
@@ -53,7 +47,7 @@ int Box::open(char *host, int port) {
     con3.device = device;
 
     c1 = Client(host, port);
-    c1.establishConnectionToHost();     // open connection
+    c1.establishConnectionToHost();
 
     if (c1.establishConnectionType(con1) == -1 ){
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 1" << std::endl;
@@ -61,47 +55,36 @@ int Box::open(char *host, int port) {
     }
 
     c2 = Client(host, port);
-    c2.establishConnectionToHost();     // open connection
+    c2.establishConnectionToHost();
 
     if (c2.establishConnectionType(con2) == -1 ) {
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 2" << std::endl;
     }
 
     c3 = Client(host, port);
-    c3.establishConnectionToHost();     // open connection
+    c3.establishConnectionToHost();
 
     if (c3.establishConnectionType(con3) == -1 ) {
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 3" << std::endl;
     }
 
     thread th_console(th_func_monitor_console, c1);
-    thread th_inotify(th_func_inotify, c2); // c2 prints ABORT
+    thread th_inotify(th_func_inotify, c2);
     thread th_server_comm(th_func_server_comm, c3);
-
-    // criar a terceita thread aqui
 
     th_console.join();
     th_inotify.join();
     th_server_comm.join();
-
-    std::cout << "TERMINOU" << std::endl;
 }
 
 bool Box::createSyncDir() {
-    char dir_path[200];
-
-    // convert string to array of char
-
     if ( sda.createDir(userFolderPath) )
         return true;
     return false;
 }
 
-//void* Box::th_func_monitor_console(void *args){
 void* Box::th_func_monitor_console(Client client){
     cout << "[Box] Monitor console thread" << endl;
-
-    //Client *cliente = (Client*)args;
 
     char line[200];
     line[0] = 'a'; // avoid closing application when pressing enter only
@@ -164,7 +147,6 @@ void* Box::th_func_inotify(Client client){
     int inotify_descriptor = inotify_init();
     if(inotify_descriptor < 0){
         cout << "[Box] Error initializing inotify" << endl;
-        //return;
         exit(-1);
     }
     cout << "[Box] Inotify initialized" << endl;
@@ -172,7 +154,6 @@ void* Box::th_func_inotify(Client client){
     int watcher_descriptor = inotify_add_watch(inotify_descriptor, folder_path, IN_DELETE | IN_CLOSE_WRITE | IN_MOVED_FROM | IN_MOVED_TO);
     if(watcher_descriptor == -1){
         cout << "[Box] Error initiazing inotify watcher" << endl;
-        //return;
         exit(-1);
     }
     cout << "[Box] Inotify watcher added to folder " << folder_path << endl;
@@ -190,7 +171,6 @@ void* Box::th_func_inotify(Client client){
 
         if(poll_result < 0){
             cout << "[Box] Inotify couldn't monitor changes on folder " << SYNC_DIR;
-            //return;
             exit(-1);
         }
         else if(poll_result == 0); // nada para ser lido
@@ -199,7 +179,6 @@ void* Box::th_func_inotify(Client client){
             int total_read = read(inotify_descriptor, buffer, BUFFER_LENGHT);
             if(total_read < 0){
                 cout << "[Box] Error reading inotify" << endl;
-                //return;
                 exit(-1);
             }
 
