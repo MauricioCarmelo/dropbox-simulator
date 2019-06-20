@@ -485,6 +485,7 @@ int Server::run() {
     fileManager.createDir(DATABASE_DIR);
     initiate_user_controller_structure();
     initiate_backup_server_structure();     // part 2
+    getBackupServersIPs();
 
     sem_init(&mutex_user_structure, 0, 1);
 
@@ -745,6 +746,31 @@ void print_user_structure()
     }
 }
 
+void Server::getBackupServersIPs(){
+    ifstream file_server("server.txt", ifstream::binary);
+    if(file_server){
+        getline(file_server, backupServerIP_1);
+        if(backupServerIP_1 == "*"){
+            isPrimary = true;
+            getline(file_server, backupServerIP_1);
+            getline(file_server, backupServerIP_2);
+        }
+        else{
+            isPrimary = false;
+            getline(file_server, backupServerIP_2);
+        }
+
+        if(isPrimary)
+            cout << "[Server] I'm the primary server!" << endl;
+        else
+            cout << "[Server] I'm a backup server!" << endl;
+        cout << "[Server] Other servers ips are " << backupServerIP_1 << " and " << backupServerIP_2 << endl;
+    }
+    else{
+        cout << "[Server] Could not read file server file" << endl;
+    }
+}
+
 
 // part 2
 void initiate_backup_server_structure()
@@ -769,6 +795,7 @@ int insert_server(int id, int socket)
     }
     return ERROR;
 }
+
 
 int clean_server_structure()
 {
