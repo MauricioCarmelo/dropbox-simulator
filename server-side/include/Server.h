@@ -25,6 +25,7 @@
 #define CMD 1
 #define FILE 2
 #define CONN 3
+#define SERVERCONN 4
 
 #define T1 1
 #define T2 2

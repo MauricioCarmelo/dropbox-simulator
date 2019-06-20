@@ -446,36 +446,37 @@ void *Server::mediatorThread(void *arg) {
 
     readLargePayloadFromSocket(socket, (char*)&connection, sizeof(struct connection));
 
-    // ver se eh conexao de outros server
-    /* if (conexao de outro servidor)
-     *      mandar pra outra funcao (terminar a thread nessa funcao)
-     */
+    if(connection.packetType == SERVERCONN){
+        insert_server(connection.device, socket);   // server id, socket from secondary server
 
-    sem_wait(&mutex_user_structure);     // lock na secao critica
-    handle_user_controller_structure(&connection, socket, arg);
-    sem_post(&mutex_user_structure);     // liberar secao critica
+    }
+    else{
+        sem_wait(&mutex_user_structure);     // lock na secao critica
+        handle_user_controller_structure(&connection, socket, arg);
+        sem_post(&mutex_user_structure);     // liberar secao critica
 
-    createUserDirectory(connection.username);
-    UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)malloc(sizeof(UserCurrentSocket));
-    userCurrentSocket->userName = connection.username;
-    userCurrentSocket->currentDevice = connection.device;
-    userCurrentSocket->currentSocket = socket;
+        createUserDirectory(connection.username);
+        UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)malloc(sizeof(UserCurrentSocket));
+        userCurrentSocket->userName = connection.username;
+        userCurrentSocket->currentDevice = connection.device;
+        userCurrentSocket->currentSocket = socket;
 
-    if (connection.packetType == CONN) {
-        if(connection.socketType== T1) {
-            pthread_create(&thread, NULL, &Server::terminalThreadFunction, userCurrentSocket);
+        if (connection.packetType == CONN) {
+            if(connection.socketType== T1) {
+                pthread_create(&thread, NULL, &Server::terminalThreadFunction, userCurrentSocket);
+            }
+
+            if(connection.socketType== T2) {
+                pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, userCurrentSocket);
+            }
+
+            if(connection.socketType== T3) {
+                //pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg); does not need a thread for him, just need him available
+            }
+        } else {
+            cout << "Expected CONN packet in mediator and received something else" << endl;
+            pthread_exit(arg);
         }
-
-        if(connection.socketType== T2) {
-            pthread_create(&thread, NULL, &Server::iNotifyThreadFunction, userCurrentSocket);
-        }
-
-        if(connection.socketType== T3) {
-            //pthread_create(&thread, NULL, &Server::serverNotifyThreadFunction, arg); does not need a thread for him, just need him available
-        }
-    } else {
-        cout << "Expected CONN packet in mediator and received something else" << endl;
-        pthread_exit(arg);
     }
 }
 
@@ -487,17 +488,26 @@ int Server::run() {
 
     sem_init(&mutex_user_structure, 0, 1);
 
-    while (true) {
-        int *newsockfd_address;
-        newsockfd_address = (int*)malloc(sizeof(int));
+    while(true) {
+        if(is_primary)
+        {
+            int *newsockfd_address;
+            newsockfd_address = (int *) malloc(sizeof(int));
 
-        if ((*newsockfd_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
-            std::cout << "[Server] ERROR on accept" << endl;
+            if ((*newsockfd_address = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen)) == -1)
+                std::cout << "[Server] ERROR on accept" << endl;
 
-        if( pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0 )
-            std::cout << "[Server] Failed to create thread" << endl;
+            if (pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0)
+                std::cout << "[Server] Failed to create thread" << endl;
+        }
+        else {
+            // aqui dentro fica recebendo do primario
+            // accept
+            // manda pra um mediator2, pra lidar com oq veio do primario
+        }
     }
 }
+
 
 void Server::createUserDirectory(const char *user) {
 
