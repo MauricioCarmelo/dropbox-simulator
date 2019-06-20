@@ -11,6 +11,8 @@
 #define MAX_DEVICES 2
 #define MAX_USERS 5
 
+#define MAX_SERVERS 2
+
 #define SUCCESS 1
 #define ERROR -1
 
@@ -48,6 +50,11 @@ struct UserCurrentSocket {
     int currentSocket;
 };
 
+struct BackupServer {
+    int id;
+    int socket;
+};
+
 int initiate_user_controller_structure();
 int insert_user(std::string name);
 User* get_user(std::string name);
@@ -62,6 +69,10 @@ int is_device_connected(std::string name);
 int number_of_users_logged();
 void print_user_structure();
 
+// part 2
+void initiate_backup_server_structure();
+int insert_server(int id, int socket);
+
 class Server {
 
 private:
@@ -69,9 +80,14 @@ private:
     int sockfd, newsockfd, n;
     socklen_t clilen;
     struct sockaddr_in serv_addr, cli_addr;
+
     Client clients[10];
     sem_t semaphore_update_other_devices;
     sem_t semaphore_devices_updated;
+
+    // part 2
+    struct sockaddr_in replication_socket;
+
 
     pthread_t threads[50];
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);

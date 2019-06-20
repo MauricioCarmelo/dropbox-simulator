@@ -1,6 +1,7 @@
 #include "../include/Server.h"
 
 User users[MAX_USERS];
+BackupServer backupServers[MAX_SERVERS];
 sem_t mutex_user_structure;
 
 Server::Server() = default;
@@ -74,6 +75,9 @@ void* Server::uploadFileCommand(void *arg) {
             sendLargePayloadToSocket(socketForServerComm, payload, payloadSize);
         }
     }
+
+    // outro loop na estrutura de servidores secundarios
+
 }
 
 void* Server::downloadFileCommand(void *arg, commandPacket command) {
@@ -442,6 +446,10 @@ void *Server::mediatorThread(void *arg) {
 
     readLargePayloadFromSocket(socket, (char*)&connection, sizeof(struct connection));
 
+    // ver se eh conexao de outros server
+    /* if (conexao de outro servidor)
+     *      mandar pra outra funcao (terminar a thread nessa funcao)
+     */
 
     sem_wait(&mutex_user_structure);     // lock na secao critica
     handle_user_controller_structure(&connection, socket, arg);
@@ -475,6 +483,7 @@ int Server::run() {
     int i = 0;
     fileManager.createDir(DATABASE_DIR);
     initiate_user_controller_structure();
+    initiate_backup_server_structure();     // part 2
 
     sem_init(&mutex_user_structure, 0, 1);
 
@@ -725,4 +734,30 @@ void print_user_structure()
         std::cout << std::endl;
     }
 }
+
+
+// part 2
+void initiate_backup_server_structure()
+{
+    for(auto &server : backupServers)
+    {
+        server.id = -1;
+        server.socket = -1;
+    }
+}
+
+int insert_server(int id, int socket)
+{
+    for(auto &server : backupServers)
+    {
+        if (server.id == -1)
+        {
+            server.id = id;
+            server.socket = socket;
+            return SUCCESS;
+        }
+    }
+    return ERROR;
+}
+
 
