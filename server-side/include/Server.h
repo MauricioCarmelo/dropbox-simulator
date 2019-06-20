@@ -87,7 +87,8 @@ private:
 
     // part 2
     struct sockaddr_in replication_socket;
-
+    bool isPrimary;
+    string backupServerIP_1, backupServerIP_2;
 
     pthread_t threads[50];
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
@@ -99,6 +100,8 @@ private:
     static int sendLargePayloadToSocket(int socketId, char *data, size_t totalSize);
     static void waitForSocketAck(int socketId);
     static int handle_user_controller_structure(connection_t *connection, int socket, void *arg);
+
+    void getBackupServersIPs();
 
 public:
     Server();
