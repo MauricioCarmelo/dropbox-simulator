@@ -72,6 +72,7 @@ void print_user_structure();
 // part 2
 void initiate_backup_server_structure();
 int insert_server(int id, int socket);
+int clean_server_structure();
 
 class Server {
 

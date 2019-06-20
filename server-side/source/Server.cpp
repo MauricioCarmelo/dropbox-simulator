@@ -760,4 +760,11 @@ int insert_server(int id, int socket)
     return ERROR;
 }
 
-
+int clean_server_structure()
+{
+    for(auto &server : backupServers)
+    {
+        server.id = -1;
+        server.socket = -1;
+    }
+}
