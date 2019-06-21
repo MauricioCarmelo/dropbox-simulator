@@ -490,7 +490,7 @@ int Server::run() {
     sem_init(&mutex_user_structure, 0, 1);
 
     while(true) {
-        if(is_primary)
+        if(isPrimary)
         {
             int *newsockfd_address;
             newsockfd_address = (int *) malloc(sizeof(int));
@@ -502,6 +502,33 @@ int Server::run() {
                 std::cout << "[Server] Failed to create thread" << endl;
         }
         else {
+            // establish connection with primary
+            char hostPrimary[] = "localhost";
+            int primary_port = 5000;
+
+            primary_server = gethostbyname(hostPrimary);
+            if (primary_server == NULL) {
+                fprintf(stderr, "[Client] ERROR, no such host\n");
+                exit(0);
+            }
+
+            if ( (primary_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
+                cout << " [Client] ERROR opening socket" << std::endl;
+
+            primary_address.sin_family = AF_INET;
+            primary_address.sin_port = htons(primary_port);
+            primary_address.sin_addr = *((struct in_addr *)primary_server->h_addr);
+            bzero(&(primary_address.sin_zero), 8);
+
+            // establish connection
+            if ( connect(primary_socket, (struct sockaddr *) &primary_address, sizeof(serv_addr)) < 0 )
+                cout << " [Client] ERROR connecting" << std::endl;
+
+            // CONTINUACAO
+                /* Logica parecido com establishConnectionType()
+                 * para enviar o struct connection) adequado
+                 */
+
             // aqui dentro fica recebendo do primario
             // accept
             // manda pra um mediator2, pra lidar com oq veio do primario

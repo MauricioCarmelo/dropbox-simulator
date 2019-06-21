@@ -88,7 +88,13 @@ private:
     sem_t semaphore_devices_updated;
 
     // part 2
-    struct sockaddr_in replication_socket;
+    // socket information to secondary connect to primary
+    struct hostent *primary_server;
+    struct sockaddr_in primary_address;
+    int primary_socket;
+
+    int replication_socket;
+
     bool isPrimary;
     string backupServerIP_1, backupServerIP_2;
 
