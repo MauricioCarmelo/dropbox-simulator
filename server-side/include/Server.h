@@ -51,6 +51,11 @@ struct UserCurrentSocket {
     int currentSocket;
 };
 
+strucut ServerArgs {
+    int id;
+    int socket;
+};
+
 struct BackupServer {
     int id;
     int socket;

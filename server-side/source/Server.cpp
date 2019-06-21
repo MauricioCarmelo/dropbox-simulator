@@ -447,9 +447,21 @@ void *Server::mediatorThread(void *arg) {
     readLargePayloadFromSocket(socket, (char*)&connection, sizeof(struct connection));
 
     if(connection.packetType == SERVERCONN){
+
+        ServerArgs *serverArgs = (ServerArgs*)malloc(sizeof(ServerArgs));
+
+
         sem_wait(&mutex_server_structure);
         insert_server(connection.device, socket);   // server id, socket from secondary server
         sem_post(&mutex_server_structure);
+        handle_secondary_server();
+
+/*                                          this function takes this thread to handle
+ *                                          one of the secondary servers. As the accept
+ *                                          was already performed, it will be necessary to
+ *                                          wait for commands from the secondary server, simillar
+ *                                          to the login inside the loop on terminalThreadFunction().
+ */
     }
     else{
         sem_wait(&mutex_user_structure);     // lock na secao critica
