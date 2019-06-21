@@ -449,12 +449,13 @@ void *Server::mediatorThread(void *arg) {
     if(connection.packetType == SERVERCONN){
 
         ServerArgs *serverArgs = (ServerArgs*)malloc(sizeof(ServerArgs));
-
+        serverArgs->id = connection.device;
+        serverArgs->socket = socket;
 
         sem_wait(&mutex_server_structure);
         insert_server(connection.device, socket);   // server id, socket from secondary server
         sem_post(&mutex_server_structure);
-        handle_secondary_server();
+        pthread_create(&thread, NULL, &Server::handle_one_secondary_server, serverArgs);
 
 /*                                          this function takes this thread to handle
  *                                          one of the secondary servers. As the accept
@@ -811,6 +812,13 @@ void Server::getBackupServersIPs(){
     else{
         cout << "[Server] Could not read file server file" << endl;
     }
+}
+
+void* Server::handle_one_secondary_server(void *arg)
+{
+    ServerArgs *serverArgs = (ServerArgs*)arg;
+
+
 }
 
 void initiate_backup_server_structure()

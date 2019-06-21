@@ -80,6 +80,7 @@ void initiate_backup_server_structure();
 int insert_server(int id, int socket);
 int clean_server_structure();
 
+
 class Server {
 
 private:
@@ -132,6 +133,8 @@ public:
     static void *downloadFileCommand(void *arg, commandPacket commandPacket);
     static void *listServerCommand(void *arg);
     static void *exitCommand(void *arg);
+
+    void* handle_one_secondary_server(void *arg);
 };
 
 #endif //DROPBOX_SERVER_H
