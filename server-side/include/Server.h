@@ -134,7 +134,7 @@ public:
     static void *listServerCommand(void *arg);
     static void *exitCommand(void *arg);
 
-    void* handle_one_secondary_server(void *arg);
+    static void* handle_one_secondary_server(void *arg);
 };
 
 #endif //DROPBOX_SERVER_H

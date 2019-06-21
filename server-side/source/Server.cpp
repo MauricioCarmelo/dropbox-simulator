@@ -814,7 +814,7 @@ void Server::getBackupServersIPs(){
     }
 }
 
-void* Server::handle_one_secondary_server(void *arg)
+static void* Server::handle_one_secondary_server(void *arg)
 {
     ServerArgs *serverArgs = (ServerArgs*)arg;
 
