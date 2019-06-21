@@ -773,6 +773,7 @@ void print_user_structure()
     }
 }
 
+// part 2
 void Server::getBackupServersIPs(){
     ifstream file_server("server.txt", ifstream::binary);
     if(file_server){
@@ -798,8 +799,6 @@ void Server::getBackupServersIPs(){
     }
 }
 
-
-// part 2
 void initiate_backup_server_structure()
 {
     for(auto &server : backupServers)
