@@ -51,7 +51,7 @@ struct UserCurrentSocket {
     int currentSocket;
 };
 
-strucut ServerArgs {
+struct ServerArgs {
     int id;
     int socket;
 };
