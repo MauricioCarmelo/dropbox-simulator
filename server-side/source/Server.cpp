@@ -2,7 +2,7 @@
 
 User users[MAX_USERS];
 BackupServer backupServers[MAX_SERVERS];
-sem_t mutex_user_structure;
+sem_t mutex_user_structure, mutex_server_structure;
 
 Server::Server() = default;
 
@@ -447,8 +447,9 @@ void *Server::mediatorThread(void *arg) {
     readLargePayloadFromSocket(socket, (char*)&connection, sizeof(struct connection));
 
     if(connection.packetType == SERVERCONN){
+        sem_wait(&mutex_server_structure);
         insert_server(connection.device, socket);   // server id, socket from secondary server
-
+        sem_post(&mutex_server_structure);
     }
     else{
         sem_wait(&mutex_user_structure);     // lock na secao critica
@@ -488,6 +489,7 @@ int Server::run() {
     getBackupServersIPs();
 
     sem_init(&mutex_user_structure, 0, 1);
+    sem_init(&mutex_server_structure, 0, 1); // part 2
 
     while(true) {
         if(isPrimary)
@@ -821,7 +823,6 @@ int insert_server(int id, int socket)
     }
     return ERROR;
 }
-
 
 int clean_server_structure()
 {
