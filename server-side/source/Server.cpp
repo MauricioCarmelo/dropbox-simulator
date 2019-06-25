@@ -455,7 +455,7 @@ void *Server::mediatorThread(void *arg) {
         sem_wait(&mutex_server_structure);
         insert_server(connection.device, socket);   // server id, socket from secondary server
         sem_post(&mutex_server_structure);
-        pthread_create(&thread, NULL, &Server::handle_one_secondary_server, serverArgs);
+        pthread_create(&thread, NULL, &Server::handle_one_secondary_server, serverArgs);    // aqui pode ser uma funcao
 
 /*                                          this function takes this thread to handle
  *                                          one of the secondary servers. As the accept
@@ -547,6 +547,9 @@ int Server::run() {
             // aqui dentro fica recebendo do primario
             // accept
             // manda pra um mediator2, pra lidar com oq veio do primario
+
+            // MANDAR ESSA LOGICA PRA UMA FUNCAO
+            // handle_primary_server();
         }
     }
 }
@@ -814,7 +817,7 @@ void Server::getBackupServersIPs(){
     }
 }
 
-static void* Server::handle_one_secondary_server(void *arg)
+void* Server::handle_one_secondary_server(void *arg)
 {
     ServerArgs *serverArgs = (ServerArgs*)arg;
 
