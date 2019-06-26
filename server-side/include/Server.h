@@ -116,6 +116,11 @@ private:
     static int handle_user_controller_structure(connection_t *connection, int socket, void *arg);
 
     void getBackupServersIPs();
+    void second_server_processing(int primary_socket);
+
+    int sendLargePayload(char *data, size_t totalSize, int s);
+    int determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket);
+    int sendDataToSocket(void *data, size_t size, int s);
 
 public:
     Server();

@@ -448,6 +448,8 @@ void *Server::mediatorThread(void *arg) {
 
     if(connection.packetType == SERVERCONN){
 
+        cout << "[Server] got in the IF statement related to the server in the mediator thread" << endl;
+
         ServerArgs *serverArgs = (ServerArgs*)malloc(sizeof(ServerArgs));
         serverArgs->id = connection.device;
         serverArgs->socket = socket;
@@ -550,10 +552,89 @@ int Server::run() {
 
             // MANDAR ESSA LOGICA PRA UMA FUNCAO
             // handle_primary_server();
+            second_server_processing(primary_socket);
         }
     }
 }
 
+void Server::second_server_processing(int primary_socket)
+{
+    int id = 17;
+
+    // send connection structure (similar to Box::open())
+    connection_t con;
+    con.packetType = SERVERCONN;
+    con.device = id;
+
+    sendLargePayload((char*)&con, sizeof(struct connection), primary_socket);
+
+    // wait for ack (similar to Client::waitForSocketAck())
+    char ackBuffer[sizeof(uint64_t)];
+    int ackReturn = read(primary_socket, ackBuffer, sizeof(uint64_t));
+    if (ackReturn == -1) {
+        cout << "waitForSocketAck: Failed to receive ack" << endl;
+    }
+    std::cout << ackBuffer << std::endl;
+
+}
+
+void* Server::handle_one_secondary_server(void *arg)
+{
+    ServerArgs *serverArgs = (ServerArgs*)arg;
+
+    // copied from writeAckIntoSocket()
+    char message[] = "ack";
+    int bytesWritenIntoSocket = write(serverArgs->socket, message, strlen(message));
+    if (bytesWritenIntoSocket == -1) {
+        cout << "writeAckIntoSocket: failed to write ack" << endl;
+    }
+
+    std::cout << "informacao escrita" << std::endl;
+
+
+}
+
+// **********************************************
+
+int Server::sendLargePayload(char *data, size_t totalSize, int s) {
+    char buffer[BUFFER_SIZE];
+    int bytesCopiedFromPayload = 0;
+    int bytesWritenInSocket = 0;
+    int bytesWritenInCurrentIteration = 0;
+    int bufferSize;
+    do {
+        bufferSize = determineCorrectSizeToBeCopied(totalSize, bytesWritenInSocket);
+
+        memcpy(buffer, data + bytesCopiedFromPayload, bufferSize);
+        bytesCopiedFromPayload += bufferSize;
+
+        bytesWritenInCurrentIteration = sendDataToSocket(buffer, bufferSize, s);
+        if (bufferSize != bytesWritenInCurrentIteration) {
+            cout << "Client.sendFilePacket: Error writing current buffer in socket" << endl;
+        }
+
+        bytesWritenInSocket += bytesWritenInCurrentIteration;
+
+    } while (bytesWritenInSocket < totalSize);
+    return bytesWritenInSocket;
+}
+
+int Server::determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket) {
+    if( totalSize - bytesWritenInSocket >= BUFFER_SIZE )
+        return BUFFER_SIZE;
+    else
+        return totalSize - bytesWritenInSocket;
+}
+
+int Server::sendDataToSocket(void *data, size_t size, int s) {
+    int bytesSocketReceived = write(s, data, size);
+    if (bytesSocketReceived != size) {
+        cout << "sendDataToSocket: Failed to send data to socket" << endl;
+    }
+    return bytesSocketReceived;
+}
+
+// **********************************************
 
 void Server::createUserDirectory(const char *user) {
 
@@ -815,13 +896,6 @@ void Server::getBackupServersIPs(){
     else{
         cout << "[Server] Could not read file server file" << endl;
     }
-}
-
-void* Server::handle_one_secondary_server(void *arg)
-{
-    ServerArgs *serverArgs = (ServerArgs*)arg;
-
-
 }
 
 void initiate_backup_server_structure()
