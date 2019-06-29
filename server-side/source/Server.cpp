@@ -174,26 +174,70 @@ void* Server::handle_one_secondary_server(void *arg)
 
 void Server::getBackupServersIPs(){
     ifstream file_server("server.txt", ifstream::binary);
+    string line;
     if(file_server){
-        getline(file_server, backupServerIP_1);
-        if(backupServerIP_1 == "*"){
+        getline(file_server, line);
+        if(line == "*"){
             isPrimary = true;
-            getline(file_server, backupServerIP_1);
-            getline(file_server, backupServerIP_2);
+
+            // lê linha do id
+            getline(file_server, line);
+            id = atoi(line.c_str());
+
+            // lê linha do meu ip e minha porta
+            getline(file_server, line);
+            char* temp = (char*)malloc(line.length());
+            strcpy(temp, line.c_str());
+            char* parts = strtok(temp, " ");
+            myIP = parts;
+            parts = strtok(NULL, " ");
+            myPort = atoi(parts);
         }
         else{
             isPrimary = false;
-            getline(file_server, backupServerIP_2);
+            id = atoi(line.c_str());
+
+            // lê linha do meu ip e minha porta
+            getline(file_server, line);
+            char* temp = (char*)malloc(line.length());
+            strcpy(temp, line.c_str());
+            char* parts = strtok(temp, " ");
+            myIP = parts;
+            parts = strtok(NULL, " ");
+            myPort = atoi(parts);
+
+            // lê linha do ip do primario e porta do primario
+            getline(file_server, line);
+            temp = (char*)malloc(line.length());
+            strcpy(temp, line.c_str());
+            parts = strtok(temp, " ");
+            primaryIP = parts;
+            parts = strtok(NULL, " ");
+            primaryPort = atoi(parts);
+
+            // lê linha do ip do outro secundario e porta do outro secundario
+            getline(file_server, line);
+            temp = (char*)malloc(line.length());
+            strcpy(temp, line.c_str());
+            parts = strtok(temp, " ");
+            secondaryIP = parts;
+            parts = strtok(NULL, " ");
+            secondaryPort = atoi(parts);
         }
 
-        if(isPrimary)
+        if(isPrimary){
             cout << "[Server] I'm the primary server!" << endl;
-        else
+            cout << "[Server] My ip is " << myIP << " and my port is " << myPort << endl;
+        }
+        else{
             cout << "[Server] I'm a backup server!" << endl;
-        cout << "[Server] Other servers ips are " << backupServerIP_1 << " and " << backupServerIP_2 << endl;
+            cout << "[Server] My ip is " << myIP << " and my port is " << myPort << endl;
+            cout << "[Server] Primary server ip is " << primaryIP << " and its port is " << primaryPort << endl;
+            cout << "[Server] The other secondary server ip is " << secondaryIP << " and its port is " << secondaryPort << endl;
+        }
     }
     else{
-        cout << "[Server] Could not read file server file" << endl;
+        cout << "[Server] ERROR: Could not read server file" << endl;
     }
 }
 

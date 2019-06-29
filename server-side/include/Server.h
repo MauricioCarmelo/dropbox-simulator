@@ -101,7 +101,14 @@ private:
     int replication_socket;
 
     bool isPrimary;
-    string backupServerIP_1, backupServerIP_2;
+    int id;
+    string myIP;
+    int myPort;
+    string primaryIP, secondaryIP;
+    int primaryPort, secondaryPort;
+    /*string backupServerIP_1, backupServerIP_2;
+    int backupServerID_1, backupServerID_2;
+    int backupServerPort_1, backupServerPort_2;*/
 
     pthread_t threads[50];
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
