@@ -764,7 +764,7 @@ void* Server::uploadFileCommand(void *arg) {
 
     auto user_pointer = get_user(username);
     for(auto& device_index : user_pointer->devices) {
-        if (device_index.id != -1) {
+        if (device_index.id != -1 && (socket != device_index.socket2 && device != device_index.id)) {
             int socketForServerComm = device_index.socket3;
             commandPacket command;
             command.command = UPLOAD;
@@ -842,7 +842,7 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
 
     auto user_pointer = get_user(userName);
     for(auto& device_index : user_pointer->devices) {
-        if(device_index.id != -1) {
+        if(device_index.id != -1 && (socket != device_index.socket2 && device != device_index.id)) {
             int socketForServerComm = device_index.socket3;
             sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
         }
