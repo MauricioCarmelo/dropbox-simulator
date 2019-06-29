@@ -4,43 +4,9 @@
 #include "../../utils/include/masterInclude.h"
 #include "../../utils/include/Instruction.h"
 
-#define BUFFER_SIZE 4
-#define CMD 1
-#define FILE 2
-#define CONN 3
-#define PROP 4
 
-#define T1 1
-#define T2 2
-#define T3 3
 
 using namespace std;
-
-
-typedef struct filePacket{
-    uint64_t packetType;
-    uint64_t fileSize;
-    char *fileName;
-    char *payload;
-} filePacket;
-
-typedef struct commandPacket {
-    uint64_t packetType;
-    uint64_t command;
-    char additionalInfo[100];
-} commandPacket;
-
-typedef struct connection{
-    uint64_t packetType;
-    uint64_t socketType;
-    int device;
-    char username[100];
-} connection_t;
-
-typedef struct userPacket{
-    uint64_t packetType;
-    User userStruct;
-} userPacket;
 
 class Client {
 

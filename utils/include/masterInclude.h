@@ -29,6 +29,36 @@ using namespace std;
 
 #define MAX_DEVICES 2
 
+#define BUFFER_SIZE 4
+#define CMD 1
+#define FILE 2
+#define CONN 3
+#define PROP 4
+
+#define T1 1
+#define T2 2
+#define T3 3
+
+#define BUFFER_SIZE 4
+
+#define MAX_USERS 5
+
+#define MAX_SERVERS 2
+
+#define SUCCESS 1
+#define ERROR -1
+
+#define MAX_USERS_REACHED 2
+#define USER_ALREADY_CONNECTED 3
+
+#define MAX_DEVICES_REACHED 4
+#define DEVICE_ALREADY_CONNECTED 5
+
+#define CMD 1
+#define FILE 2
+#define CONN 3
+#define SERVERCONN 4
+
 struct Device {
     int id;
     int socket1;
@@ -39,6 +69,47 @@ struct Device {
 struct User {
     string name;
     Device devices[MAX_DEVICES];
+};
+
+typedef struct filePacket{
+    uint64_t packetType;
+    uint64_t fileSize;
+    char *fileName;
+    char *payload;
+} filePacket;
+
+typedef struct commandPacket {
+    uint64_t packetType;
+    uint64_t command;
+    char additionalInfo[100];
+} commandPacket;
+
+typedef struct connection{
+    uint64_t packetType;
+    uint64_t socketType;
+    int device;
+    char username[100];
+} connection_t;
+
+typedef struct userPacket{
+    uint64_t packetType;
+    User userStruct;
+} userPacket;
+
+struct UserCurrentSocket {
+    string userName;
+    int currentDevice;
+    int currentSocket;
+};
+
+struct ServerArgs {
+    int id;
+    int socket;
+};
+
+struct BackupServer {
+    int id;
+    int socket;
 };
 
 #endif //DROPBOX_MASTERINCLUDE_H

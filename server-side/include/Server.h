@@ -6,48 +6,10 @@
 #include "../../client-side/include/Client.h"
 #include "../../utils/include/masterInclude.h"
 
-#define BUFFER_SIZE 4
 
-#define MAX_USERS 5
-
-#define MAX_SERVERS 2
-
-#define SUCCESS 1
-#define ERROR -1
-
-#define MAX_USERS_REACHED 2
-#define USER_ALREADY_CONNECTED 3
-
-#define MAX_DEVICES_REACHED 4
-#define DEVICE_ALREADY_CONNECTED 5
-
-#define CMD 1
-#define FILE 2
-#define CONN 3
-#define SERVERCONN 4
-
-#define T1 1
-#define T2 2
-#define T3 3
 
 #define DATABASE_DIR "./database"
 
-
-struct UserCurrentSocket {
-    string userName;
-    int currentDevice;
-    int currentSocket;
-};
-
-struct ServerArgs {
-    int id;
-    int socket;
-};
-
-struct BackupServer {
-    int id;
-    int socket;
-};
 
 int initiate_user_controller_structure();
 int insert_user(std::string name);
