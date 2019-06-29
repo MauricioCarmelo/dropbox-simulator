@@ -8,7 +8,6 @@
 
 #define BUFFER_SIZE 4
 
-#define MAX_DEVICES 2
 #define MAX_USERS 5
 
 #define MAX_SERVERS 2
@@ -33,17 +32,6 @@
 
 #define DATABASE_DIR "./database"
 
-struct Device {
-    int id;
-    int socket1;
-    int socket2;
-    int socket3;
-};
-
-struct User {
-    string name;
-    Device devices[MAX_DEVICES];
-};
 
 struct UserCurrentSocket {
     string userName;

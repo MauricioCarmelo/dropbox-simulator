@@ -776,6 +776,12 @@ void* Server::uploadFileCommand(void *arg) {
         }
     }
 
+    for(auto &server : backupServers) {
+        if (server.id != -1) {
+            //create propagation here
+        }
+    }
+
     // outro loop na estrutura de servidores secundarios
 
 }
@@ -828,6 +834,7 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
     UserCurrentSocket *userCurrentSocket = (UserCurrentSocket*)arg;
     int socket = userCurrentSocket->currentSocket;
     string userName = userCurrentSocket->userName;
+    int device = userCurrentSocket->currentDevice;
 
     stringstream filepath;
     filepath << "./database/" << userName << "/" << command.additionalInfo;

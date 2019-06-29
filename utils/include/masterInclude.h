@@ -27,5 +27,19 @@
 
 using namespace std;
 
+#define MAX_DEVICES 2
+
+struct Device {
+    int id;
+    int socket1;
+    int socket2;
+    int socket3;
+};
+
+struct User {
+    string name;
+    Device devices[MAX_DEVICES];
+};
+
 #endif //DROPBOX_MASTERINCLUDE_H
 

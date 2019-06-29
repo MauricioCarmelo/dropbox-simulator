@@ -8,12 +8,14 @@
 #define CMD 1
 #define FILE 2
 #define CONN 3
+#define PROP 4
 
 #define T1 1
 #define T2 2
 #define T3 3
 
 using namespace std;
+
 
 typedef struct filePacket{
     uint64_t packetType;
@@ -34,6 +36,11 @@ typedef struct connection{
     int device;
     char username[100];
 } connection_t;
+
+typedef struct userPacket{
+    uint64_t packetType;
+    User userStruct;
+} userPacket;
 
 class Client {
 
