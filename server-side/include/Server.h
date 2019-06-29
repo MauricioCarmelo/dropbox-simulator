@@ -73,7 +73,6 @@ int insert_socket(std::string name, int device_id, int socket_descriptor, int so
 int remove_user(std::string name);
 int is_device_connected(std::string name);
 int number_of_users_logged();
-void print_user_structure();
 
 // part 2
 void initiate_backup_server_structure();
