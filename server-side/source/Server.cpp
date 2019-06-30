@@ -261,6 +261,12 @@ int Server::secundary_set_info_from_primary(int port, int size_ip, char *ip) {
     strcpy(infoAsSecondary.primaryInfo.ip, ip);
 }
 
+int Server::secundary_set_info_from_secondary(int port, int size_ip, char *ip) {
+    infoAsSecondary.secondaryInfo.port = port;
+    infoAsSecondary.secondaryInfo.ip = (char*)malloc(size_ip);
+    strcpy(infoAsSecondary.secondaryInfo.ip, ip);
+}
+
 
 
 /* ******************************************************

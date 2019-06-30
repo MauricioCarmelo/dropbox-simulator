@@ -112,7 +112,7 @@ struct BackupServer {
     int socket;
 };
 
-struct PrimaryInfo {
+struct AddressInfo {
     int port;
     char *ip;
 };
@@ -127,7 +127,8 @@ struct InfoMeAsSecondary {
     int my_id;
     int my_port;
     char *my_ip;
-    struct PrimaryInfo primaryInfo;
+    struct AddressInfo primaryInfo;
+    struct AddressInfo secondaryInfo;
 };
 
 
