@@ -90,7 +90,10 @@ public:
     static void *iNotifyThreadFunction(void *arg);
     static void *serverNotifyThreadFunction(void *arg);
     static void *uploadFileCommand(void *arg);
+    static void *receiveFileUploadedFromPrimary(int primarySocket, commandPacket commandPacket);
     static void *deleteFileCommand(void *arg, commandPacket commandPacket);
+    static void *deleteFileDeletedInPrimary(int primarySocket, commandPacket commandPacket);
+    static void *insertUserConnectedInPrimary(int primarySocket);
     static void *downloadFileCommand(void *arg, commandPacket commandPacket);
     static void *listServerCommand(void *arg);
     static void *exitCommand(void *arg);

@@ -48,6 +48,7 @@ int Box::open(char *host, int port) {
 
     c1 = Client(host, port);
     c1.establishConnectionToHost();
+    con1.socket = c1.sockfd;
 
     if (c1.establishConnectionType(con1) == -1 ){
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 1" << std::endl;
@@ -56,6 +57,7 @@ int Box::open(char *host, int port) {
 
     c2 = Client(host, port);
     c2.establishConnectionToHost();
+    con2.socket = c2.sockfd;
 
     if (c2.establishConnectionType(con2) == -1 ) {
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 2" << std::endl;
@@ -63,6 +65,7 @@ int Box::open(char *host, int port) {
 
     c3 = Client(host, port);
     c3.establishConnectionToHost();
+    con3.socket = c3.sockfd;
 
     if (c3.establishConnectionType(con3) == -1 ) {
         std::cout << "[Box] ABORTAR, nao foi possivel conectar client 3" << std::endl;

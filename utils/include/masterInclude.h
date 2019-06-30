@@ -58,6 +58,7 @@ using namespace std;
 #define FILE 2
 #define CONN 3
 #define SERVERCONN 4
+#define INSERT_USER 5
 
 struct Device {
     int id;
@@ -89,6 +90,7 @@ typedef struct connection{
     uint64_t socketType;
     int device;
     char username[100];
+    int socket;
 } connection_t;
 
 typedef struct userPacket{

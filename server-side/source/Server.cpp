@@ -154,6 +154,68 @@ void Server::second_server_processing(int primary_socket)
     }
     std::cout << ackBuffer << std::endl;
 
+    auto primaryStillAlive = true;
+    commandPacket commandReceived;
+
+    while(primaryStillAlive) {
+        readLargePayloadFromSocket(primary_socket, (char*)&commandReceived, sizeof(struct commandPacket));
+        switch (commandReceived.command){
+            case UPLOAD:
+                receiveFileUploadedFromPrimary(primary_socket, commandReceived);
+                break;
+            case DELETE:
+                deleteFileDeletedInPrimary(primary_socket, commandReceived);
+                break;
+            case INSERT_USER:
+                insertUserConnectedInPrimary(primary_socket);
+                break;
+            default:
+                std::cout << "Server Command Invalid" << std::endl;
+                break;
+        }
+    }
+
+}
+
+void* Server::receiveFileUploadedFromPrimary(int primarySocket, commandPacket commandPacket) {
+
+    char fileSizeBuffer[sizeof(uint64_t)];
+    readDataFromSocket(primarySocket, fileSizeBuffer, sizeof(uint64_t));
+
+    uint64_t payloadSize = *(int *)fileSizeBuffer;
+    char payload[payloadSize];
+    readLargePayloadFromSocket(primarySocket, payload, payloadSize);
+
+    string completePath(commandPacket.additionalInfo);
+
+    ofstream offFile(completePath);
+    offFile.write(payload, payloadSize);
+    offFile.close();
+}
+
+void* Server::deleteFileDeletedInPrimary(int primarySocket, commandPacket commandPacket) {
+
+    string completePath(commandPacket.additionalInfo);
+
+    int remove_result = remove(completePath.c_str());
+    if(remove_result != 0)
+        perror("Error deleting file");
+    else
+        cout << "[Instruction] File " << commandPacket.additionalInfo << "deleted succesfully" << endl;
+}
+
+void* Server::insertUserConnectedInPrimary(int primarySocket) {
+
+    connection_t connection;
+
+    readLargePayloadFromSocket(primarySocket, (char*)&connection, sizeof(struct connection));
+
+    std::string user(connection.username);
+    auto device_id = connection.device;
+
+    insert_user(user);
+    insert_device(user, device_id);
+    insert_socket(user, device_id, connection.socket, connection.socketType);
 }
 
 void* Server::handle_one_secondary_server(void *arg)
@@ -701,6 +763,18 @@ int Server::handle_user_controller_structure(connection_t *connection, int socke
             insert_socket(user, device_id, socket, connection->socketType);
             writeAckIntoSocket(socket, "ack");
             // THREAD SEGUE EXECUCAO
+
+            for(auto &server : backupServers) {
+                if (server.id != -1) {
+                    int socketForServerComm = server.socket;
+                    commandPacket command;
+                    command.command = INSERT_USER;
+                    command.packetType = CMD;
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&connection, sizeof(struct connection));
+                }
+            }
+
         }
 
     }
@@ -716,6 +790,17 @@ int Server::handle_user_controller_structure(connection_t *connection, int socke
             insert_socket(user, device_id, socket, connection->socketType);
             writeAckIntoSocket(socket, "ack");
             // THREAD SEGUE EXECUCAO
+
+            for(auto &server : backupServers) {
+                if (server.id != -1) {
+                    int socketForServerComm = server.socket;
+                    commandPacket command;
+                    command.command = INSERT_USER;
+                    command.packetType = CMD;
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&connection, sizeof(struct connection));
+                }
+            }
         }
     }
 }
@@ -778,7 +863,14 @@ void* Server::uploadFileCommand(void *arg) {
 
     for(auto &server : backupServers) {
         if (server.id != -1) {
-            //create propagation here
+            int socketForServerComm = server.socket;
+            commandPacket command;
+            command.command = UPLOAD;
+            command.packetType = CMD;
+            strcpy(command.additionalInfo, completePath.c_str());
+            sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+            sendDataToSocket(socketForServerComm, &payloadSize, sizeof(payloadSize));
+            sendLargePayloadToSocket(socketForServerComm, payload, payloadSize);
         }
     }
 
@@ -851,6 +943,17 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
     for(auto& device_index : user_pointer->devices) {
         if(device_index.id != -1 && (socket != device_index.socket2 && device != device_index.id)) {
             int socketForServerComm = device_index.socket3;
+            sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+        }
+    }
+
+    for(auto &server : backupServers) {
+        if (server.id != -1) {
+            int socketForServerComm = server.socket;
+            commandPacket command;
+            command.command = DELETE;
+            command.packetType = CMD;
+            strcpy(command.additionalInfo, filepathstring.c_str());
             sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
         }
     }
