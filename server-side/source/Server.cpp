@@ -278,31 +278,62 @@ void Server::getBackupServersIPs(){
         if(line == "*"){
             isPrimary = true;
 
+            int my_id, my_port, ip_size; // new
+            char *my_ip;    // new
+
             // lê linha do id
             getline(file_server, line);
             id = atoi(line.c_str());
+            my_id = id;
 
             // lê linha do meu ip e minha porta
             getline(file_server, line);
             char* temp = (char*)malloc(line.length());
             strcpy(temp, line.c_str());
+
             char* parts = strtok(temp, " ");
             myIP = parts;
+
+            my_ip = (char*)malloc(strlen(parts)); // new
+            strcpy(my_ip, parts); // new
+            ip_size = strlen(my_ip); // new
+
             parts = strtok(NULL, " ");
             myPort = atoi(parts);
+            my_port = myPort;   // new
+
+            primary_set_info(my_id, my_port, ip_size, my_ip); // new
+
         }
         else{
             isPrimary = false;
             id = atoi(line.c_str());
 
+            int my_id, my_port, ip_size, p_ip_size, s_ip_size;
+            int primary_port, secondary_port;
+
+            char *my_ip;
+            char *primary_ip, *secondary_ip;
+
+            // lê linha do id
+            getline(file_server, line);
+            id = atoi(line.c_str());
+            my_id = id;
+
             // lê linha do meu ip e minha porta
             getline(file_server, line);
             char* temp = (char*)malloc(line.length());
             strcpy(temp, line.c_str());
             char* parts = strtok(temp, " ");
             myIP = parts;
+
+            my_ip = (char*)malloc(strlen(parts)); // new
+            strcpy(my_ip, parts);   // new
+            ip_size = strlen(my_ip);    // new
+
             parts = strtok(NULL, " ");
             myPort = atoi(parts);
+            my_port = myPort; // new
 
             // lê linha do ip do primario e porta do primario
             getline(file_server, line);
@@ -310,8 +341,15 @@ void Server::getBackupServersIPs(){
             strcpy(temp, line.c_str());
             parts = strtok(temp, " ");
             primaryIP = parts;
+
+            primary_ip = (char*)malloc(strlen(parts)); // new
+            strcpy(primary_ip, parts);   // new
+            p_ip_size = strlen(primary_ip);    // new
+
+
             parts = strtok(NULL, " ");
             primaryPort = atoi(parts);
+            primary_port = primaryPort; // new
 
             // lê linha do ip do outro secundario e porta do outro secundario
             getline(file_server, line);
@@ -319,8 +357,19 @@ void Server::getBackupServersIPs(){
             strcpy(temp, line.c_str());
             parts = strtok(temp, " ");
             secondaryIP = parts;
+
+            secondary_ip = (char*)malloc(strlen(parts)); // new
+            strcpy(secondary_ip, parts);   // new
+            s_ip_size = strlen(secondary_ip);    // new
+
             parts = strtok(NULL, " ");
             secondaryPort = atoi(parts);
+            secondary_port = secondaryPort; // new
+
+            secondary_set_info(my_id, my_port, ip_size, my_ip);
+            secondary_set_info_from_primary(primary_port, p_ip_size, primary_ip);
+            secondary_set_info_from_secondary(secondary_port, s_ip_size, secondary_ip);
+
         }
 
         if(isPrimary){

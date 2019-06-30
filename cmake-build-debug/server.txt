@@ -1,4 +1,5 @@
-250
+#
+25
+localhost 6000
 localhost 5001
-localhost 5000
-localhost 5002
+127.0.0.1 6005

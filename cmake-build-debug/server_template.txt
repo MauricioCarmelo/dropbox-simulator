@@ -4,6 +4,7 @@ LINHA 2: [id]
 LINHA 3: [my_ip] [my_port]
 
 Para os servers secundarios:
+#
 LINHA 1: [id]
 LINHA 2: [my_ip] [my_port]
 LINHA 3: [primary_ip] [primary_port]
