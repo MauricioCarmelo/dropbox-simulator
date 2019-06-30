@@ -120,6 +120,7 @@ struct BackupServer {
 struct AddressInfo {
     int port;
     char *ip;
+    int socket;
 };
 
 struct InfoMeAsPrimary {

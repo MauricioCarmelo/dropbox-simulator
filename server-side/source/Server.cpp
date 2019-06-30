@@ -108,13 +108,15 @@ int Server::run() {
             char hostPrimary[] = "localhost";
             int primary_port = 5000;
 
-            primary_server = gethostbyname(hostPrimary);
+            //primary_server = gethostbyname(hostPrimary);
+            primary_server = gethostbyname(infoAsSecondary.primaryInfo.ip);
             if (primary_server == NULL) {
                 fprintf(stderr, "[Client] ERROR, no such host\n");
                 exit(0);
             }
 
-            if ( (primary_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
+            //if ( (primary_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
+            if ( (infoAsSecondary.primaryInfo.socket = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
                 cout << " [Client] ERROR opening socket" << std::endl;
 
             primary_address.sin_family = AF_INET;
@@ -123,7 +125,7 @@ int Server::run() {
             bzero(&(primary_address.sin_zero), 8);
 
             // establish connection
-            if ( connect(primary_socket, (struct sockaddr *) &primary_address, sizeof(serv_addr)) < 0 )
+            if ( connect(infoAsSecondary.primaryInfo.socket, (struct sockaddr *) &primary_address, sizeof(serv_addr)) < 0 )
                 cout << " [Client] ERROR connecting" << std::endl;
 
             // CONTINUACAO
@@ -137,7 +139,7 @@ int Server::run() {
 
             // MANDAR ESSA LOGICA PRA UMA FUNCAO
             // handle_primary_server();
-            second_server_processing(primary_socket);
+            second_server_processing(infoAsSecondary.primaryInfo.socket);
         }
     }
 }

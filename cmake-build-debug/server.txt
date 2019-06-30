@@ -1,5 +1,5 @@
 #
-25
+17
 localhost 6000
-localhost 5001
+localhost 5000
 127.0.0.1 6005
