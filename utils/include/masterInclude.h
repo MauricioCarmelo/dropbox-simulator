@@ -112,5 +112,25 @@ struct BackupServer {
     int socket;
 };
 
+struct PrimaryInfo {
+    int port;
+    char *ip;
+};
+
+struct InfoMeAsPrimary {
+    int my_id;
+    int my_port;
+    char *my_ip;
+};
+
+struct InfoMeAsSecondary {
+    int my_id;
+    int my_port;
+    char *my_ip;
+    struct PrimaryInfo primaryInfo;
+};
+
+
+
 #endif //DROPBOX_MASTERINCLUDE_H
 

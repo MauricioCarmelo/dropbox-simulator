@@ -6,8 +6,6 @@
 #include "../../client-side/include/Client.h"
 #include "../../utils/include/masterInclude.h"
 
-
-
 #define DATABASE_DIR "./database"
 
 
@@ -50,6 +48,9 @@ private:
 
     int replication_socket;
 
+    InfoMeAsPrimary infoAsPrimary;
+    InfoMeAsSecondary infoAsSecondary;
+
     bool isPrimary;
     int id;
     string myIP;
@@ -78,6 +79,11 @@ private:
     int determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket);
     int sendDataToSocket(void *data, size_t size, int s);
 
+    int primary_set_info(int id, int port, int size_ip, char *ip); // size_ip: tamanho do array de char *ip
+    int secundary_set_info(int id, int port, int size_ip, char *ip);
+    int secundary_set_info_from_primary(int port, int size_ip, char *ip);
+
+
 public:
     Server();
     ~Server() {};
@@ -96,6 +102,7 @@ public:
     static void *exitCommand(void *arg);
 
     static void* handle_one_secondary_server(void *arg);
+
 };
 
 #endif //DROPBOX_SERVER_H
