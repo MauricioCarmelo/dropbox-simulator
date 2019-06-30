@@ -169,6 +169,9 @@ void Server::second_server_processing(int primary_socket)
             case INSERT_USER:
                 insertUserConnectedInPrimary(primary_socket);
                 break;
+            case EXIT:
+                receiveExitFromPrimary(primary_socket);
+                break;
             default:
                 std::cout << "Server Command Invalid" << std::endl;
                 break;
@@ -216,6 +219,27 @@ void* Server::insertUserConnectedInPrimary(int primarySocket) {
     insert_user(user);
     insert_device(user, device_id);
     insert_socket(user, device_id, connection.socket, connection.socketType);
+}
+
+void* Server::receiveExitFromPrimary(int primarySocket) {
+
+    UserCurrentSocket user;
+
+    readLargePayloadFromSocket(primarySocket, (char*)&user, sizeof(struct UserCurrentSocket));
+
+    string userName = user.userName;
+    int socket = user.currentSocket;
+    int device = user.currentDevice;
+
+    if (remove_device(userName, device) == SUCCESS) {
+        if ( !is_device_connected(userName) ) {
+            remove_user(userName);
+        }
+    }
+    else{
+        std::cout << "[SERVER]: User device still connected" << std::endl;
+    }
+
 }
 
 void* Server::handle_one_secondary_server(void *arg)
@@ -1049,6 +1073,17 @@ void* Server::exitCommand(void *arg) {
     if (remove_device(userName, device) == SUCCESS) {
         if ( !is_device_connected(userName) ) {
             remove_user(userName);
+        }
+
+        for(auto &server : backupServers) {
+            if (server.id != -1) {
+                int socketForServerComm = server.socket;
+                commandPacket command;
+                command.command = EXIT;
+                command.packetType = CMD;
+                sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+                sendLargePayloadToSocket(socketForServerComm, (char*)arg, sizeof(struct UserCurrentSocket));
+            }
         }
     }
     else{
