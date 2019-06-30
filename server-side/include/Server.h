@@ -94,6 +94,8 @@ public:
     static void *downloadFileCommand(void *arg, commandPacket commandPacket);
     static void *listServerCommand(void *arg);
     static void *exitCommand(void *arg);
+    static void *sendHeartbeatThreadFunction(void *arg);
+    static void* receiveHeartbeatThreadFunction(void *arg);
 
     static void* handle_one_secondary_server(void *arg);
 };

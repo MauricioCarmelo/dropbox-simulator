@@ -59,6 +59,9 @@ using namespace std;
 #define CONN 3
 #define SERVERCONN 4
 
+#define HEARTBEAT_EMPTY 1
+#define HEARTBEAT_DATA 2
+
 struct Device {
     int id;
     int socket1;
@@ -110,6 +113,10 @@ struct ServerArgs {
 struct BackupServer {
     int id;
     int socket;
+};
+
+struct PropagationPackage{
+    int type;
 };
 
 #endif //DROPBOX_MASTERINCLUDE_H

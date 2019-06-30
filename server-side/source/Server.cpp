@@ -6,7 +6,8 @@ sem_t mutex_user_structure, mutex_server_structure;
 
 Server::Server() = default;
 
-
+bool sendHeartbeatThreadCreated = false;
+bool receiveHeartbeatThreadCreated = false;
 
 
 
@@ -87,6 +88,12 @@ int Server::run() {
     while(true) {
         if(isPrimary)
         {
+            if(!sendHeartbeatThreadCreated){
+                sendHeartbeatThreadCreated = true;
+                pthread_t sendHeartbeatThread;
+                pthread_create(&sendHeartbeatThread, NULL, &Server::sendHeartbeatThreadFunction, NULL);
+            }
+
             int *newsockfd_address;
             newsockfd_address = (int *) malloc(sizeof(int));
 
@@ -135,6 +142,7 @@ int Server::run() {
     }
 }
 
+
 void Server::second_server_processing(int primary_socket)
 {
     int id = 17;
@@ -154,6 +162,11 @@ void Server::second_server_processing(int primary_socket)
     }
     std::cout << ackBuffer << std::endl;
 
+    if(!receiveHeartbeatThreadCreated){
+        receiveHeartbeatThreadCreated = true;
+        pthread_t receiveHeartbeatThread;
+        pthread_create(&receiveHeartbeatThread, NULL, &Server::receiveHeartbeatThreadFunction, &primary_socket);
+    }
 }
 
 void* Server::handle_one_secondary_server(void *arg)
@@ -1006,6 +1019,52 @@ void* Server::iNotifyThreadFunction(void *arg) {
             default:
                 std::cout << "Command Invalid" << std::endl;
                 break;
+        }
+    }
+}
+
+void* Server::sendHeartbeatThreadFunction(void *arg){
+    cout << "[Server] Send heartbeat thread started!" << endl;
+    int NUM_SECONDS = 3;
+    double timeCounter = 0;
+    clock_t currentTime = clock();
+    clock_t previousTime = currentTime;
+
+    while(true){
+        currentTime = clock();
+        timeCounter += (double)(currentTime - previousTime);
+        previousTime = currentTime;
+        if(timeCounter > (double)(NUM_SECONDS * CLOCKS_PER_SEC)){
+            timeCounter -= (double)(NUM_SECONDS * CLOCKS_PER_SEC);
+            cout << "[Server] heartbeat" << endl;
+
+            // enviar heartbeat aqui
+            for(auto &server : backupServers){
+                if(server.id != -1){
+                    int socketForServerComm = server.socket;
+                    PropagationPackage prop;
+                    prop.type = HEARTBEAT_EMPTY;
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&prop, sizeof(prop));
+                }
+            }
+        }
+    }
+}
+
+void* Server::receiveHeartbeatThreadFunction(void *arg){
+    cout << "[Server] Receive heartbeat thread started!" << endl;
+    int* socket_primary = (int*)arg;
+
+    while(true){
+        try {
+            // read heartbeat
+            char data[sizeof(PropagationPackage)];
+            readLargePayloadFromSocket(*socket_primary, data, sizeof(data));
+            cout << data << endl;
+        }
+        catch (...){
+            // erro no read aka primario morreu
+            cout << "[Server] Server primario morreu!" << endl;
         }
     }
 }
