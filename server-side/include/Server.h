@@ -80,9 +80,9 @@ private:
     int sendDataToSocket(void *data, size_t size, int s);
 
     int primary_set_info(int id, int port, int size_ip, char *ip); // size_ip: tamanho do array de char *ip
-    int secundary_set_info(int id, int port, int size_ip, char *ip);
-    int secundary_set_info_from_primary(int port, int size_ip, char *ip);
-    int secundary_set_info_from_secondary(int port, int size_ip, char *ip);
+    int secondary_set_info(int id, int port, int size_ip, char *ip);
+    int secondary_set_info_from_primary(int port, int size_ip, char *ip);
+    int secondary_set_info_from_secondary(int port, int size_ip, char *ip);
 
 
 public:

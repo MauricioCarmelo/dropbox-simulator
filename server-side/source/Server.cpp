@@ -249,19 +249,19 @@ int Server::primary_set_info(int id, int port, int size_ip, char *ip) {
     strcpy(infoAsPrimary.my_ip, ip);
 }
 
-int Server::secundary_set_info(int id, int port, int size_ip, char *ip) {
+int Server::secondary_set_info(int id, int port, int size_ip, char *ip) {
     infoAsSecondary.my_id = id;
     infoAsSecondary.my_port = port;
     infoAsSecondary.my_ip = (char*)malloc(size_ip);
     strcpy(infoAsSecondary.my_ip, ip);
 }
-int Server::secundary_set_info_from_primary(int port, int size_ip, char *ip) {
+int Server::secondary_set_info_from_primary(int port, int size_ip, char *ip) {
     infoAsSecondary.primaryInfo.port = port;
     infoAsSecondary.primaryInfo.ip = (char*)malloc(size_ip);
     strcpy(infoAsSecondary.primaryInfo.ip, ip);
 }
 
-int Server::secundary_set_info_from_secondary(int port, int size_ip, char *ip) {
+int Server::secondary_set_info_from_secondary(int port, int size_ip, char *ip) {
     infoAsSecondary.secondaryInfo.port = port;
     infoAsSecondary.secondaryInfo.ip = (char*)malloc(size_ip);
     strcpy(infoAsSecondary.secondaryInfo.ip, ip);
