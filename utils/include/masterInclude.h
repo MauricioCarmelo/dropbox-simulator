@@ -58,6 +58,7 @@ using namespace std;
 #define FILE 2
 #define CONN 3
 #define SERVERCONN 4
+#define INSERT_USER 5
 
 #define HEARTBEAT_EMPTY 1
 #define HEARTBEAT_DATA 2
@@ -92,6 +93,7 @@ typedef struct connection{
     uint64_t socketType;
     int device;
     char username[100];
+    int socket;
 } connection_t;
 
 typedef struct userPacket{
@@ -113,6 +115,25 @@ struct ServerArgs {
 struct BackupServer {
     int id;
     int socket;
+};
+
+struct AddressInfo {
+    int port;
+    char *ip;
+};
+
+struct InfoMeAsPrimary {
+    int my_id;
+    int my_port;
+    char *my_ip;
+};
+
+struct InfoMeAsSecondary {
+    int my_id;
+    int my_port;
+    char *my_ip;
+    struct AddressInfo primaryInfo;
+    struct AddressInfo secondaryInfo;
 };
 
 struct PropagationPackage{

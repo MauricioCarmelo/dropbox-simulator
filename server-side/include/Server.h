@@ -6,8 +6,6 @@
 #include "../../client-side/include/Client.h"
 #include "../../utils/include/masterInclude.h"
 
-
-
 #define DATABASE_DIR "./database"
 
 
@@ -50,6 +48,9 @@ private:
 
     int replication_socket;
 
+    InfoMeAsPrimary infoAsPrimary;
+    InfoMeAsSecondary infoAsSecondary;
+
     bool isPrimary;
     int id;
     string myIP;
@@ -78,6 +79,12 @@ private:
     int determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket);
     int sendDataToSocket(void *data, size_t size, int s);
 
+    int primary_set_info(int id, int port, int size_ip, char *ip); // size_ip: tamanho do array de char *ip
+    int secondary_set_info(int id, int port, int size_ip, char *ip);
+    int secondary_set_info_from_primary(int port, int size_ip, char *ip);
+    int secondary_set_info_from_secondary(int port, int size_ip, char *ip);
+
+
 public:
     Server();
     ~Server() {};
@@ -90,7 +97,11 @@ public:
     static void *iNotifyThreadFunction(void *arg);
     static void *serverNotifyThreadFunction(void *arg);
     static void *uploadFileCommand(void *arg);
+    static void *receiveFileUploadedFromPrimary(int primarySocket, commandPacket commandPacket);
     static void *deleteFileCommand(void *arg, commandPacket commandPacket);
+    static void *deleteFileDeletedInPrimary(int primarySocket, commandPacket commandPacket);
+    static void *insertUserConnectedInPrimary(int primarySocket);
+    static void *receiveExitFromPrimary(int primarySocket);
     static void *downloadFileCommand(void *arg, commandPacket commandPacket);
     static void *listServerCommand(void *arg);
     static void *exitCommand(void *arg);
@@ -98,6 +109,7 @@ public:
     static void* receiveHeartbeatThreadFunction(void *arg);
 
     static void* handle_one_secondary_server(void *arg);
+
 };
 
 #endif //DROPBOX_SERVER_H
