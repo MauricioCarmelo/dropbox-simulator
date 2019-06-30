@@ -6,7 +6,8 @@ sem_t mutex_user_structure, mutex_server_structure;
 
 Server::Server() = default;
 
-
+bool sendHeartbeatThreadCreated = false;
+bool receiveHeartbeatThreadCreated = false;
 
 
 
@@ -87,6 +88,12 @@ int Server::run() {
     while(true) {
         if(isPrimary)
         {
+            if(!sendHeartbeatThreadCreated){
+                sendHeartbeatThreadCreated = true;
+                pthread_t sendHeartbeatThread;
+                pthread_create(&sendHeartbeatThread, NULL, &Server::sendHeartbeatThreadFunction, NULL);
+            }
+
             int *newsockfd_address;
             newsockfd_address = (int *) malloc(sizeof(int));
 
@@ -153,6 +160,97 @@ void Server::second_server_processing(int primary_socket)
         cout << "waitForSocketAck: Failed to receive ack" << endl;
     }
     std::cout << ackBuffer << std::endl;
+
+    if(!receiveHeartbeatThreadCreated){
+        receiveHeartbeatThreadCreated = true;
+        pthread_t receiveHeartbeatThread;
+        pthread_create(&receiveHeartbeatThread, NULL, &Server::receiveHeartbeatThreadFunction, &primary_socket);
+    }
+
+    auto primaryStillAlive = true;
+    commandPacket commandReceived;
+
+    while(primaryStillAlive) {
+        readLargePayloadFromSocket(primary_socket, (char*)&commandReceived, sizeof(struct commandPacket));
+        switch (commandReceived.command){
+            case UPLOAD:
+                receiveFileUploadedFromPrimary(primary_socket, commandReceived);
+                break;
+            case DELETE:
+                deleteFileDeletedInPrimary(primary_socket, commandReceived);
+                break;
+            case INSERT_USER:
+                insertUserConnectedInPrimary(primary_socket);
+                break;
+            case EXIT:
+                receiveExitFromPrimary(primary_socket);
+                break;
+            default:
+                std::cout << "Server Command Invalid" << std::endl;
+                break;
+        }
+    }
+}
+
+void* Server::receiveFileUploadedFromPrimary(int primarySocket, commandPacket commandPacket) {
+
+    char fileSizeBuffer[sizeof(uint64_t)];
+    readDataFromSocket(primarySocket, fileSizeBuffer, sizeof(uint64_t));
+
+    uint64_t payloadSize = *(int *)fileSizeBuffer;
+    char payload[payloadSize];
+    readLargePayloadFromSocket(primarySocket, payload, payloadSize);
+
+    string completePath(commandPacket.additionalInfo);
+
+    ofstream offFile(completePath);
+    offFile.write(payload, payloadSize);
+    offFile.close();
+}
+
+void* Server::deleteFileDeletedInPrimary(int primarySocket, commandPacket commandPacket) {
+
+    string completePath(commandPacket.additionalInfo);
+
+    int remove_result = remove(completePath.c_str());
+    if(remove_result != 0)
+        perror("Error deleting file");
+    else
+        cout << "[Instruction] File " << commandPacket.additionalInfo << "deleted succesfully" << endl;
+}
+
+void* Server::insertUserConnectedInPrimary(int primarySocket) {
+
+    connection_t connection;
+
+    readLargePayloadFromSocket(primarySocket, (char*)&connection, sizeof(struct connection));
+
+    std::string user(connection.username);
+    auto device_id = connection.device;
+
+    insert_user(user);
+    insert_device(user, device_id);
+    insert_socket(user, device_id, connection.socket, connection.socketType);
+}
+
+void* Server::receiveExitFromPrimary(int primarySocket) {
+
+    UserCurrentSocket user;
+
+    readLargePayloadFromSocket(primarySocket, (char*)&user, sizeof(struct UserCurrentSocket));
+
+    string userName = user.userName;
+    int socket = user.currentSocket;
+    int device = user.currentDevice;
+
+    if (remove_device(userName, device) == SUCCESS) {
+        if ( !is_device_connected(userName) ) {
+            remove_user(userName);
+        }
+    }
+    else{
+        std::cout << "[SERVER]: User device still connected" << std::endl;
+    }
 
 }
 
@@ -729,6 +827,18 @@ int Server::handle_user_controller_structure(connection_t *connection, int socke
             insert_socket(user, device_id, socket, connection->socketType);
             writeAckIntoSocket(socket, "ack");
             // THREAD SEGUE EXECUCAO
+
+            for(auto &server : backupServers) {
+                if (server.id != -1) {
+                    int socketForServerComm = server.socket;
+                    commandPacket command;
+                    command.command = INSERT_USER;
+                    command.packetType = CMD;
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&connection, sizeof(struct connection));
+                }
+            }
+
         }
 
     }
@@ -744,6 +854,17 @@ int Server::handle_user_controller_structure(connection_t *connection, int socke
             insert_socket(user, device_id, socket, connection->socketType);
             writeAckIntoSocket(socket, "ack");
             // THREAD SEGUE EXECUCAO
+
+            for(auto &server : backupServers) {
+                if (server.id != -1) {
+                    int socketForServerComm = server.socket;
+                    commandPacket command;
+                    command.command = INSERT_USER;
+                    command.packetType = CMD;
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&connection, sizeof(struct connection));
+                }
+            }
         }
     }
 }
@@ -806,7 +927,14 @@ void* Server::uploadFileCommand(void *arg) {
 
     for(auto &server : backupServers) {
         if (server.id != -1) {
-            //create propagation here
+            int socketForServerComm = server.socket;
+            commandPacket command;
+            command.command = UPLOAD;
+            command.packetType = CMD;
+            strcpy(command.additionalInfo, completePath.c_str());
+            sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+            sendDataToSocket(socketForServerComm, &payloadSize, sizeof(payloadSize));
+            sendLargePayloadToSocket(socketForServerComm, payload, payloadSize);
         }
     }
 
@@ -882,6 +1010,17 @@ void* Server::deleteFileCommand(void *arg, commandPacket command) {
             sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
         }
     }
+
+    for(auto &server : backupServers) {
+        if (server.id != -1) {
+            int socketForServerComm = server.socket;
+            commandPacket command;
+            command.command = DELETE;
+            command.packetType = CMD;
+            strcpy(command.additionalInfo, filepathstring.c_str());
+            sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+        }
+    }
 }
 
 void* Server::listServerCommand(void *arg) {
@@ -946,6 +1085,17 @@ void* Server::exitCommand(void *arg) {
     if (remove_device(userName, device) == SUCCESS) {
         if ( !is_device_connected(userName) ) {
             remove_user(userName);
+        }
+
+        for(auto &server : backupServers) {
+            if (server.id != -1) {
+                int socketForServerComm = server.socket;
+                commandPacket command;
+                command.command = EXIT;
+                command.packetType = CMD;
+                sendLargePayloadToSocket(socketForServerComm, (char*)&command, sizeof(struct commandPacket));
+                sendLargePayloadToSocket(socketForServerComm, (char*)arg, sizeof(struct UserCurrentSocket));
+            }
         }
     }
     else{
@@ -1034,6 +1184,52 @@ void* Server::iNotifyThreadFunction(void *arg) {
             default:
                 std::cout << "Command Invalid" << std::endl;
                 break;
+        }
+    }
+}
+
+void* Server::sendHeartbeatThreadFunction(void *arg){
+    cout << "[Server] Send heartbeat thread started!" << endl;
+    int NUM_SECONDS = 3;
+    double timeCounter = 0;
+    clock_t currentTime = clock();
+    clock_t previousTime = currentTime;
+
+    while(true){
+        currentTime = clock();
+        timeCounter += (double)(currentTime - previousTime);
+        previousTime = currentTime;
+        if(timeCounter > (double)(NUM_SECONDS * CLOCKS_PER_SEC)){
+            timeCounter -= (double)(NUM_SECONDS * CLOCKS_PER_SEC);
+            cout << "[Server] heartbeat" << endl;
+
+            // enviar heartbeat aqui
+            for(auto &server : backupServers){
+                if(server.id != -1){
+                    int socketForServerComm = server.socket;
+                    PropagationPackage prop;
+                    prop.type = HEARTBEAT_EMPTY;
+                    sendLargePayloadToSocket(socketForServerComm, (char*)&prop, sizeof(prop));
+                }
+            }
+        }
+    }
+}
+
+void* Server::receiveHeartbeatThreadFunction(void *arg){
+    cout << "[Server] Receive heartbeat thread started!" << endl;
+    int* socket_primary = (int*)arg;
+
+    while(true){
+        try {
+            // read heartbeat
+            char data[sizeof(PropagationPackage)];
+            readLargePayloadFromSocket(*socket_primary, data, sizeof(data));
+            cout << data << endl;
+        }
+        catch (...){
+            // erro no read aka primario morreu
+            cout << "[Server] Server primario morreu!" << endl;
         }
     }
 }
