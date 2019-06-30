@@ -120,7 +120,7 @@ int Server::run() {
                 cout << " [Client] ERROR opening socket" << std::endl;
 
             primary_address.sin_family = AF_INET;
-            primary_address.sin_port = htons(primary_port);
+            primary_address.sin_port = htons(infoAsSecondary.primaryInfo.port);
             primary_address.sin_addr = *((struct in_addr *)primary_server->h_addr);
             bzero(&(primary_address.sin_zero), 8);
 
