@@ -168,23 +168,71 @@ void Server::second_server_processing(int primary_socket) {
     commandPacket commandReceived;
 
     while (primaryStillAlive) {
-        readLargePayloadFromSocket(primary_socket, (char *) &commandReceived, sizeof(struct commandPacket));
-        switch (commandReceived.command) {
-            case UPLOAD:
-                receiveFileUploadedFromPrimary(primary_socket, commandReceived);
-                break;
-            case DELETE:
-                deleteFileDeletedInPrimary(primary_socket, commandReceived);
-                break;
-            case INSERT_USER:
-                insertUserConnectedInPrimary(primary_socket);
-                break;
-            case EXIT:
-                receiveExitFromPrimary(primary_socket);
-                break;
-            default:
-                std::cout << "Server Command Invalid" << std::endl;
-                break;
+        try{
+            readLargePayloadFromSocket(primary_socket, (char *) &commandReceived, sizeof(struct commandPacket));
+            switch (commandReceived.command) {
+                case UPLOAD:
+                    receiveFileUploadedFromPrimary(primary_socket, commandReceived);
+                    break;
+                case DELETE:
+                    deleteFileDeletedInPrimary(primary_socket, commandReceived);
+                    break;
+                case INSERT_USER:
+                    insertUserConnectedInPrimary(primary_socket);
+                    break;
+                case EXIT:
+                    receiveExitFromPrimary(primary_socket);
+                    break;
+                default:
+                    std::cout << "Server Command Invalid" << std::endl;
+                    break;
+            }
+        }
+        catch(...){
+            cout << "[Server] Primary server died! Starting election..." << endl;
+
+            // conectar com o outro servidor secundário
+            if((sock_election_send = socket(AF_INET, SOCK_STREAM, 0)) == -1)
+                cout << "[Server] ERROR opening socket of election" << endl;
+
+            if(id % 2 == 0){
+                sleep(5);
+                if(connect(sock_election_send, (struct sockaddr *)&serv_addr_election, sizeof(serv_addr_election)) < 0)
+                    cout << "[Server] ERROR connecting to other secondary server" << endl;
+            }
+            else{
+                serv_addr_election.sin_family = AF_INET;
+                serv_addr_election.sin_port = htons(infoAsSecondary.secondaryInfo.port);
+                serv_addr_election.sin_addr.s_addr = inet_addr(infoAsSecondary.secondaryInfo.ip);
+                bzero(&(serv_addr_election.sin_zero), 8);
+
+                if(bind(sock_election_send, (struct sockaddr *) &serv_addr_election, sizeof(serv_addr_election)) < 0)
+                    cout << "[Server] ERROR on binding of election" << endl;
+
+                listen(sock_election_send, 5);
+                socklen_t other_secondary_serv_len = sizeof(struct sockaddr_in);
+
+                int *newsockfd_address;
+                newsockfd_address = (int*)malloc(sizeof(int));
+                struct sockaddr_in other_secondary_serv_addr;
+                if((*newsockfd_address = accept(sock_election_receive, (struct sockaddr *) &other_secondary_serv_addr, &other_secondary_serv_len)) == -1)
+                    cout << "[Server] ERROR on accept to other secondary server" << endl;
+            }
+
+            cout << "opa" << endl;
+            // lógica da eleição
+            sendDataToSocket(infoAsSecondary.secondaryInfo.socket, &id, sizeof(id));
+            int secondaryId = 0;
+            readDataFromSocket(infoAsSecondary.secondaryInfo.socket, (char*)&secondaryId, sizeof(secondaryId));
+            if(id > secondaryId){
+                cout << "[Server] I won the election, I am the new primary server!" << endl;
+                isPrimary = true;
+                primaryStillAlive = false;
+                // comunicar cliente
+            }
+            else{
+                cout << "[Server] Perdi a eleição, continuo como servidor secundário!" << endl;
+            }
         }
     }
 }

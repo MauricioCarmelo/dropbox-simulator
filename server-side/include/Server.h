@@ -32,9 +32,9 @@ class Server {
 
 private:
     FileManager fileManager;
-    int sockfd, newsockfd, n;
+    int sockfd, sock_election_send, sock_election_receive;
     socklen_t clilen;
-    struct sockaddr_in serv_addr, cli_addr;
+    struct sockaddr_in serv_addr, cli_addr, serv_addr_election;
 
     Client clients[10];
     sem_t semaphore_update_other_devices;
