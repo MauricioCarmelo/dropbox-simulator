@@ -100,8 +100,8 @@ int Server::run() {
                 std::cout << "[Server] Failed to create thread" << endl;
         } else {
             // establish connection with primary
-            char hostPrimary[] = "localhost";
-            int primary_port = 5000;
+            //char hostPrimary[] = "localhost";
+            //int primary_port = 5000;
 
             //primary_server = gethostbyname(hostPrimary);
             primary_server = gethostbyname(infoAsSecondary.primaryInfo.ip);
@@ -141,7 +141,7 @@ int Server::run() {
 }
 
 void Server::second_server_processing(int primary_socket) {
-    int id = 17;
+    int id = infoAsSecondary.my_id;
 
     // send connection structure (similar to Box::open())
     connection_t con;
@@ -946,6 +946,7 @@ void *Server::uploadFileCommand(void *arg) {
     offFile.close();
     cout << " [SERVER] Arquivo copiado no path:" << completePath << endl;
 
+    sem_wait(&mutex_user_structure);
     auto user_pointer = get_user(username);
     for (auto &device_index : user_pointer->devices) {
         if (device_index.id != -1 && (socket != device_index.socket2 && device != device_index.id)) {
@@ -959,7 +960,9 @@ void *Server::uploadFileCommand(void *arg) {
             sendLargePayloadToSocket(socketForServerComm, payload, payloadSize);
         }
     }
+    sem_post(&mutex_user_structure);
 
+    sem_wait(&mutex_server_structure);
     for (auto &server : backupServers) {
         if (server.id != -1) {
             int socketForServerComm = server.socket;
@@ -972,8 +975,7 @@ void *Server::uploadFileCommand(void *arg) {
             sendLargePayloadToSocket(socketForServerComm, payload, payloadSize);
         }
     }
-
-    // outro loop na estrutura de servidores secundarios
+    sem_post(&mutex_server_structure);
 
 }
 
@@ -1036,6 +1038,7 @@ void *Server::deleteFileCommand(void *arg, commandPacket command) {
     else
         cout << "[Instruction] File " << command.additionalInfo << "deleted succesfully" << endl;
 
+    sem_wait(&mutex_user_structure);
     auto user_pointer = get_user(userName);
     for (auto &device_index : user_pointer->devices) {
         if (device_index.id != -1 && (socket != device_index.socket2 && device != device_index.id)) {
@@ -1043,7 +1046,9 @@ void *Server::deleteFileCommand(void *arg, commandPacket command) {
             sendLargePayloadToSocket(socketForServerComm, (char *) &command, sizeof(struct commandPacket));
         }
     }
+    sem_post(&mutex_user_structure);
 
+    sem_wait(&mutex_server_structure);
     for (auto &server : backupServers) {
         if (server.id != -1) {
             int socketForServerComm = server.socket;
@@ -1054,6 +1059,7 @@ void *Server::deleteFileCommand(void *arg, commandPacket command) {
             sendLargePayloadToSocket(socketForServerComm, (char *) &command, sizeof(struct commandPacket));
         }
     }
+    sem_post(&mutex_server_structure);
 }
 
 void *Server::listServerCommand(void *arg) {
