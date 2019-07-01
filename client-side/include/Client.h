@@ -4,8 +4,6 @@
 #include "../../utils/include/masterInclude.h"
 #include "../../utils/include/Instruction.h"
 
-
-
 using namespace std;
 
 class Client {
@@ -29,8 +27,6 @@ public:
     int downloadFile(char *filename);
     int establishConnectionType(connection_t c);
     int sendExitCommand();
-    std::string name;
-    bool isLogged;
     int sendDataToSocket(void *data, size_t size);
     int sendLargePayloadToSocket(char *data, size_t totalSize);
     void waitForSocketAck();

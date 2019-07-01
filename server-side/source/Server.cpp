@@ -9,11 +9,9 @@ Server::Server() = default;
 bool sendHeartbeatThreadCreated = false;
 bool receiveHeartbeatThreadCreated = false;
 
-
 void *Server::serverNotifyThreadFunction(void *arg) {
 
 }
-
 
 void *Server::mediatorThread(void *arg) {
     cout << "[Server] got in the mediator thread" << endl;
@@ -86,7 +84,7 @@ int Server::run() {
         if (isPrimary) {
             if (!sendHeartbeatThreadCreated) {
                 sendHeartbeatThreadCreated = true;
-                pthread_t sendHeartbeatThread;
+                //pthread_t sendHeartbeatThread;
                 //pthread_create(&sendHeartbeatThread, NULL, &Server::sendHeartbeatThreadFunction, NULL);
             }
 
@@ -99,18 +97,13 @@ int Server::run() {
             if (pthread_create(&threads[i], NULL, &Server::mediatorThread, newsockfd_address) != 0)
                 std::cout << "[Server] Failed to create thread" << endl;
         } else {
-            // establish connection with primary
-            //char hostPrimary[] = "localhost";
-            //int primary_port = 5000;
 
-            //primary_server = gethostbyname(hostPrimary);
             primary_server = gethostbyname(infoAsSecondary.primaryInfo.ip);
             if (primary_server == NULL) {
                 fprintf(stderr, "[Client] ERROR, no such host\n");
                 exit(0);
             }
 
-            //if ( (primary_socket = socket(AF_INET, SOCK_STREAM, 0)) == -1 )
             if ((infoAsSecondary.primaryInfo.socket = socket(AF_INET, SOCK_STREAM, 0)) == -1)
                 cout << " [Client] ERROR opening socket" << std::endl;
 
@@ -119,22 +112,10 @@ int Server::run() {
             primary_address.sin_addr = *((struct in_addr *) primary_server->h_addr);
             bzero(&(primary_address.sin_zero), 8);
 
-            // establish connection
             if (connect(infoAsSecondary.primaryInfo.socket, (struct sockaddr *) &primary_address, sizeof(serv_addr)) <
                 0)
                 cout << " [Client] ERROR connecting" << std::endl;
 
-            // CONTINUACAO
-            /* Logica parecido com establishConnectionType()
-             * para enviar o struct connection) adequado
-             */
-
-            // aqui dentro fica recebendo do primario
-            // accept
-            // manda pra um mediator2, pra lidar com oq veio do primario
-
-            // MANDAR ESSA LOGICA PRA UMA FUNCAO
-            // handle_primary_server();
             second_server_processing(infoAsSecondary.primaryInfo.socket);
         }
     }
@@ -160,7 +141,7 @@ void Server::second_server_processing(int primary_socket) {
 
     if (!receiveHeartbeatThreadCreated) {
         receiveHeartbeatThreadCreated = true;
-        pthread_t receiveHeartbeatThread;
+        //pthread_t receiveHeartbeatThread;
         //pthread_create(&receiveHeartbeatThread, NULL, &Server::receiveHeartbeatThreadFunction, &primary_socket);
     }
 
@@ -219,7 +200,6 @@ void Server::second_server_processing(int primary_socket) {
                     cout << "[Server] ERROR on accept to other secondary server" << endl;
             }
 
-            cout << "opa" << endl;
             // lógica da eleição
             sendDataToSocket(infoAsSecondary.secondaryInfo.socket, &id, sizeof(id));
             int secondaryId = 0;
@@ -303,7 +283,6 @@ void *Server::receiveExitFromPrimary(int primarySocket) {
 void *Server::handle_one_secondary_server(void *arg) {
     ServerArgs *serverArgs = (ServerArgs *) arg;
 
-    // copied from writeAckIntoSocket()
     char message[] = "ack";
     int bytesWritenIntoSocket = write(serverArgs->socket, message, strlen(message));
     if (bytesWritenIntoSocket == -1) {
@@ -413,7 +392,6 @@ void Server::getBackupServersIPs() {
             secondary_set_info(my_id, my_port, ip_size, my_ip);
             secondary_set_info_from_primary(primary_port, p_ip_size, primary_ip);
             secondary_set_info_from_secondary(secondary_port, s_ip_size, secondary_ip);
-
         }
 
         if (isPrimary) {
@@ -423,14 +401,12 @@ void Server::getBackupServersIPs() {
             cout << "[Server] I'm a backup server!" << endl;
             cout << "[Server] My ip is " << myIP << " and my port is " << myPort << endl;
             cout << "[Server] Primary server ip is " << primaryIP << " and its port is " << primaryPort << endl;
-            cout << "[Server] The other secondary server ip is " << secondaryIP << " and its port is " << secondaryPort
-                 << endl;
+            cout << "[Server] The other secondary server ip is " << secondaryIP << " and its port is " << secondaryPort << endl;
         }
     } else {
         cout << "[Server] ERROR: Could not read server file" << endl;
     }
 }
-
 
 int Server::primary_set_info(int id, int port, int size_ip, char *ip) {
     infoAsPrimary.my_id = id;
@@ -458,13 +434,6 @@ int Server::secondary_set_info_from_secondary(int port, int size_ip, char *ip) {
     strcpy(infoAsSecondary.secondaryInfo.ip, ip);
 }
 
-
-/* ******************************************************
-
-    ACCESS SERVER STRUCTURE
-
-******************************************************** */
-
 void initiate_backup_server_structure() {
     for (auto &server : backupServers) {
         server.id = -1;
@@ -490,11 +459,6 @@ int clean_server_structure() {
     }
 }
 
-/* ***********************************************************************
-
-        SERVER - SERVER TRANSMISSION - mostly related to part 2
-
-************************************************************************** */
 int Server::sendLargePayload(char *data, size_t totalSize, int s) {
     char buffer[BUFFER_SIZE];
     int bytesCopiedFromPayload = 0;
@@ -537,14 +501,6 @@ int Server::createSocket(char *host, int port) {
 
     return 0;
 }
-
-/* ***********************************************************************
-
-        CLIENT - SERVER TRANSMISSION - mostly related to part 1
-
-************************************************************************** */
-
-
 
 int Server::determineCorrectSizeToBeCopied(int totalSize, int bytesWritenInSocket) {
     if (totalSize - bytesWritenInSocket >= BUFFER_SIZE)
@@ -643,12 +599,6 @@ void Server::waitForSocketAck(int socketId) {
     }
 }
 
-/* **********************************************
-
-        INTERNAL USE
-
-************************************************ */
-
 void Server::createUserDirectory(const char *user) {
 
     struct stat st = {0};
@@ -663,12 +613,6 @@ void Server::createUserDirectory(const char *user) {
         cout << "[Server] User " << user << " already has a folder" << endl;
     }
 }
-
-/* ******************************************************
-
-    ACCESS USER AND DEVICE STRUCTURE
-
-******************************************************** */
 
 int initiate_user_controller_structure() {
     for (auto &user : users) {
@@ -952,12 +896,6 @@ int Server::handle_user_controller_structure(connection_t *connection, int socke
     }
 }
 
-/* ******************************************************
-
-    HANDLE CLIENT COMMANDS
-
-******************************************************** */
-
 void *Server::uploadFileCommand(void *arg) {
     cout << "Upload File Thread" << endl;
 
@@ -1188,13 +1126,6 @@ void *Server::exitCommand(void *arg) {
         std::cout << "[SERVER]: User device still connected" << std::endl;
     }
 }
-
-/* ******************************************************
-
-    CLIENT - SERVER THREAD FUNCTIONS
-
-******************************************************** */
-
 
 void *Server::terminalThreadFunction(void *arg) {
     std::cout << "terminal thread here" << std::endl;
