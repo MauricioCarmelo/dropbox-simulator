@@ -32,21 +32,14 @@ class Server {
 
 private:
     FileManager fileManager;
-    int sockfd, newsockfd, n;
+    int sockfd, sock_election_send, sock_election_receive;
     socklen_t clilen;
-    struct sockaddr_in serv_addr, cli_addr;
-
-    Client clients[10];
-    sem_t semaphore_update_other_devices;
-    sem_t semaphore_devices_updated;
+    struct sockaddr_in serv_addr, cli_addr, serv_addr_election;
 
     // part 2
     // socket information to secondary connect to primary
     struct hostent *primary_server;
     struct sockaddr_in primary_address;
-    int primary_socket;
-
-    int replication_socket;
 
     InfoMeAsPrimary infoAsPrimary;
     InfoMeAsSecondary infoAsSecondary;
@@ -57,9 +50,6 @@ private:
     int myPort;
     string primaryIP, secondaryIP;
     int primaryPort, secondaryPort;
-    /*string backupServerIP_1, backupServerIP_2;
-    int backupServerID_1, backupServerID_2;
-    int backupServerPort_1, backupServerPort_2;*/
 
     pthread_t threads[50];
     static int determineCorrectSizeToBeRead(int totalSize, int bytesWritenInSocket);
